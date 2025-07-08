@@ -41,6 +41,9 @@ RenderPassReflection ExampleBlitPass::reflect(const CompileData& compileData)
     RenderPassReflection reflector;
     reflector.addInput("input", "the source texture");
     reflector.addOutput("output", "the destination texture");
+    //这是另一种写法，可以批量添加输入和输出
+    //addRenderPassInputs(reflector, kInputChannels);
+    //addRenderPassOutputs(reflector, kOutputChannels);
     return reflector;
 }
 ```
@@ -49,6 +52,7 @@ RenderPassReflection ExampleBlitPass::reflect(const CompileData& compileData)
 This function runs the pass and contains all required render and/or compute operations to produce the desired output. All requested resources are available through `renderData` under the same names assigned to them in `reflect()`.
 
 `ExampleBlitPass` copies the source texture to the destination texture, which are accessed through `renderData.getTexture("input")` and `renderData.getTexture("output")`, respectively. `RenderContext` already implements the blit operation which takes a `ShaderResourceView` as a source and a `RenderTargetView` as a destination. We will use it like so:
+
 ```c++
 void ExampleBlitPass::execute(RenderContext* pRenderContext, const RenderData& renderData)
 {
@@ -68,6 +72,10 @@ void ExampleBlitPass::execute(RenderContext* pRenderContext, const RenderData& r
 
 ## Registering Render Passes
 
+~~*新版本的falcor的注册似乎不是这么做的？而且似乎现在的ReSTIR PT Demo所在的版本和最新版本也不一样*~~
+
+见falcor笔记
+
 Every render pass library project contains a `registerPlugin()` function which registers all render pass classes implemented in the library.
 ```c++
 extern "C" FALCOR_API_EXPORT void registerPlugin(Falcor::PluginRegistry& registry)
@@ -83,3 +91,4 @@ FALCOR_PLUGIN_CLASS(ExampleBlitPass, "ExampleBlitPass", "Blits a texture into an
 ```
 
 We will ignore further details regarding render passes and their implementation for the purposes of this tutorial. Additional information can be found [here](../usage/render-passes.md).
+

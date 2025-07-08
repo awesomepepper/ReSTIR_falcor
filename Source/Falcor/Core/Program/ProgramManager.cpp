@@ -125,6 +125,7 @@ ref<const ProgramVersion> ProgramManager::createProgramVersion(const Program& pr
     if (pSlangRequest == nullptr)
         return nullptr;
 
+    // 这里slangResult有错误，可能是上文生成pSlangRequest的过程就有问题
     SlangResult slangResult = spCompile(pSlangRequest);
     log += spGetDiagnosticOutput(pSlangRequest);
     if (SLANG_FAILED(slangResult))

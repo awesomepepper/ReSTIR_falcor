@@ -26,6 +26,7 @@
  # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  **************************************************************************/
 #include "Properties.h"
+#include "Utils/Dictionary.h"
 
 #include <nlohmann/json.hpp>
 #include <pybind11/pybind11.h>
@@ -490,5 +491,39 @@ EXPORT_PROPERTY_ACCESSOR(float4)
 EXPORT_PROPERTY_ACCESSOR(Properties)
 
 #undef EXPORT_PROPERTY_ACCESSOR
+
+// template bool Properties::getInternal<bool>(std::string_view name, bool& value) const;
+// template bool Properties::getInternal<int>(std::string_view name, int& value) const;
+// template bool Properties::getInternal<uint32_t>(std::string_view name, uint32_t& value) const;
+// template bool Properties::getInternal<float>(std::string_view name, float& value) const;
+// template bool Properties::getInternal<std::string>(std::string_view name, std::string& value) const;
+// template bool Properties::getInternal<std::filesystem::path>(std::string_view name, std::filesystem::path& value) const;
+// template bool Properties::getInternal<int2>(std::string_view name, int2& value) const;
+// template bool Properties::getInternal<int3>(std::string_view name, int3& value) const;
+// template bool Properties::getInternal<int4>(std::string_view name, int4& value) const;
+// template bool Properties::getInternal<uint2>(std::string_view name, uint2& value) const;
+// template bool Properties::getInternal<uint3>(std::string_view name, uint3& value) const;
+// template bool Properties::getInternal<uint4>(std::string_view name, uint4& value) const;
+// template bool Properties::getInternal<float2>(std::string_view name, float2& value) const;
+// template bool Properties::getInternal<float3>(std::string_view name, float3& value) const;
+// template bool Properties::getInternal<float4>(std::string_view name, float4& value) const;
+// template bool Properties::getInternal<Falcor::Dictionary>(std::string_view name, Falcor::Dictionary& value) const;
+//
+// template void Properties::setInternal<bool>(std::string_view name, const bool& value);
+// template void Properties::setInternal<int>(std::string_view name, const int& value);
+// template void Properties::setInternal<uint32_t>(std::string_view name, const uint32_t& value);
+// template void Properties::setInternal<float>(std::string_view name, const float& value);
+// template void Properties::setInternal<std::string>(std::string_view name, const std::string& value);
+// template void Properties::setInternal<std::filesystem::path>(std::string_view name, const std::filesystem::path& value);
+// template void Properties::setInternal<int2>(std::string_view name, const int2& value);
+// template void Properties::setInternal<int3>(std::string_view name, const int3& value);
+// template void Properties::setInternal<int4>(std::string_view name, const int4& value);
+// template void Properties::setInternal<uint2>(std::string_view name, const uint2& value);
+// template void Properties::setInternal<uint3>(std::string_view name, const uint32_t& value);
+// template void Properties::setInternal<uint4>(std::string_view name, const uint4& value);
+// template void Properties::setInternal<float2>(std::string_view name, const float2& value);
+// template void Properties::setInternal<float3>(std::string_view name, const float3& value);
+// template void Properties::setInternal<float4>(std::string_view name, const float4& value);
+// template void Properties::setInternal<Falcor::Dictionary>(std::string_view name, const Falcor::Dictionary& value);
 
 } // namespace Falcor

@@ -43,6 +43,18 @@ RasterizerState::SharedPtr mpRasterState;
 GraphicsVars::SharedPtr mpVars;
 ```
 
+这部分内容在新的falcor中以如下形式表达：
+
+```cpp
+    ref<IScene>                     mpScene;                    
+    ref<SampleGenerator>            mpSampleGenerator;          
+    std::unique_ptr<EnvMapSampler>  mpEnvMapSampler;            
+    std::unique_ptr<EmissiveLightSampler> mpEmissiveSampler;    
+    std::unique_ptr<RTXDI>          mpRTXDI;                    
+    std::unique_ptr<PixelStats>     mpPixelStats;               
+    std::unique_ptr<PixelDebug>     mpPixelDebug;               
+```
+
 Let's take a look at the other functions, most of which will be more complex than in `ExampleBlitPass`.
 
 ### `WireframePass()`

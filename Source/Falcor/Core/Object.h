@@ -207,6 +207,7 @@ public:
 
     /// Copy constructor.
     ref(const ref& r) : mPtr(r.mPtr)
+    //ref(ref& r) : mPtr(r.mPtr)
     {
         if (mPtr)
             incRef((const Object*)(mPtr));
@@ -215,6 +216,7 @@ public:
     /// Construct a reference from a convertible reference.
     template<typename T2 = T>
     ref(const ref<T2>& r) : mPtr(r.mPtr)
+    //ref(ref<T2>& r) : mPtr(r.mPtr)
     {
         static_assert(std::is_base_of_v<Object, T>, "Cannot create reference to object not inheriting from Object class.");
         static_assert(std::is_convertible_v<T2*, T*>, "Cannot create reference to object from unconvertible reference.");

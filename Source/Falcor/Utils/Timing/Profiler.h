@@ -310,3 +310,23 @@ private:
 #define FALCOR_PROFILE(_pRenderContext, _name)
 #define FALCOR_PROFILE_CUSTOM(_pRenderContext, _name, _flags)
 #endif
+
+#if FALCOR_ENABLE_PROFILER
+#define FALCOR_PROFILE_ALL_FLAGS(_name) Falcor::ScopedProfilerEvent _profileEvent##__LINE__(_name)
+#define FALCOR_PROFILE_SOME_FLAGS(_name, _flags) Falcor::ScopedProfilerEvent _profileEvent##__LINE__(_name, _flags)
+
+#define FALCOR_GET_PROFILE(_1, _2, NAME, ...) NAME
+#define FALCOR_PROFILER(...) FALCOR_GET_PROFILE(__VA_ARGS__, FALCOR_PROFILE_SOME_FLAGS, FALCOR_PROFILE_ALL_FLAGS)(__VA_ARGS__)
+#else
+#define FALCOR_PROFILER(_name)
+#endif
+
+//#if FALCOR_ENABLE_PROFILER
+//#define PROFILE_ALL_FLAGS(_name) Falcor::ProfilerEvent _profileEvent##__LINE__(_name)
+//#define PROFILE_SOME_FLAGS(_name, _flags) Falcor::ProfilerEvent _profileEvent##__LINE__(_name, _flags)
+//
+//#define GET_PROFILE(_1, _2, NAME, ...) NAME
+//#define PROFILE(...) GET_PROFILE(__VA_ARGS__, PROFILE_SOME_FLAGS, PROFILE_ALL_FLAGS)(__VA_ARGS__)
+//#else
+//#define PROFILE(_name)
+//#endif

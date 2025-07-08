@@ -62,7 +62,7 @@ class RenderContext;
  * The shader code is disabled (using macros) when debugging is off.
  * When enabled, async readback is used but expect a minor perf loss.
  */
-class FALCOR_API PixelDebug
+class FALCOR_API PixelDebug : public Object
 {
 public:
     /**
