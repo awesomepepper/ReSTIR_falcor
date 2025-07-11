@@ -794,7 +794,8 @@ void ScreenSpaceReSTIR::updatePrograms()
             mpUpdateEmissiveTriangles = ComputePass::create(mpDevice, desc, defines, false);
         }
 
-        mpScene->bindShaderData(mpUpdateEmissiveTriangles->getRootVar()[kSceneVar]);
+        //mpScene->bindShaderData(mpUpdateEmissiveTriangles->getRootVar()[kSceneVar]);
+        mpScene->bindShaderData(mpUpdateEmissiveTriangles->getRootVar()["CB"][kSceneVar]);
         mpUpdateEmissiveTriangles->getProgram()->addDefines(defines);
         mpUpdateEmissiveTriangles->setVars(nullptr);
     }

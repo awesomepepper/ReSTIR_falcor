@@ -27,7 +27,7 @@
  **************************************************************************/
 #include "ScreenSpaceReSTIRPass.h"
 #include "RenderGraph/RenderPassHelpers.h"
-
+// git test
 namespace
 {
 const char kDesc[] = "Standalone pass for direct lighting with screen-space ReSTIR.";
@@ -309,19 +309,7 @@ void ScreenSpaceReSTIRPass::prepareSurfaceData(RenderContext* pRenderContext, co
     {
         auto defines = mpScene->getSceneDefines();
         defines.add("GBUFFER_ADJUST_SHADING_NORMALS", mGBufferAdjustShadingNormals ? "1" : "0");
-
-        /*start*/
-        auto shaderModules = mpScene->getShaderModules();
-        auto typeConformances = mpScene->getTypeConformances();
-
-        ProgramDesc desc;
-        desc.addShaderModules(shaderModules);
-        desc.addTypeConformances(typeConformances);
-        desc.addShaderLibrary(kPrepareSurfaceDataFile).csEntry("main").setShaderModel(ShaderModel::SM6_6);
-        mpPrepareSurfaceData = ComputePass::create(mpDevice, desc, defines, false);
-        /*end*/
-
-        // mpPrepareSurfaceData = ComputePass::create(mpDevice, kPrepareSurfaceDataFile, "main", defines, false);
+        mpPrepareSurfaceData = ComputePass::create(mpDevice, kPrepareSurfaceDataFile, "main", defines, false);
         mpPrepareSurfaceData->setVars(nullptr);
     }
 
@@ -331,10 +319,7 @@ void ScreenSpaceReSTIRPass::prepareSurfaceData(RenderContext* pRenderContext, co
     mpScene->bindShaderData(mpPrepareSurfaceData->getRootVar()[kSceneVar]);
 
     // auto var = mpPrepareSurfaceData["CB"]["gPrepareSurfaceData"];
-    // start
-    auto var = mpPrepareSurfaceData->getRootVar()["CB"][kPrepareSurfaceDataCB];
-    // end
-    // auto var = mpPrepareSurfaceData->getRootVar()[kPrepareSurfaceDataCB];    // 原
+    auto var = mpPrepareSurfaceData->getRootVar()[kPrepareSurfaceDataCB];
 
     var["vbuffer"] = pVBuffer;
     var["frameDim"] = mFrameDim;
@@ -367,21 +352,7 @@ void ScreenSpaceReSTIRPass::finalShading(
         defines.add("GBUFFER_ADJUST_SHADING_NORMALS", mGBufferAdjustShadingNormals ? "1" : "0");
         // defines.add("USE_ENV_BACKGROUND", mpScene->useEnvBackground() ? "1" : "0");
         defines.add(getValidResourceDefines(kOutputChannels, renderData));
-
-        // start
-        auto shaderModules = mpScene->getShaderModules();
-        auto typeConformances = mpScene->getTypeConformances();
-
-        ProgramDesc desc;
-        desc.addShaderModules(shaderModules);
-        desc.addTypeConformances(typeConformances);
-        desc.addShaderLibrary(kFinalShadingFile)
-            .csEntry("main")
-            .setShaderModel(ShaderModel::SM6_6);         // 跟 PrepareSurfaceData
-        mpFinalShading = ComputePass::create(mpDevice, desc, defines, false);
-        // end
-
-        // mpFinalShading = ComputePass::create(mpDevice, kFinalShadingFile, "main", defines, false);
+        mpFinalShading = ComputePass::create(mpDevice, kFinalShadingFile, "main", defines, false);
         mpFinalShading->setVars(nullptr);
     }
 
@@ -397,10 +368,7 @@ void ScreenSpaceReSTIRPass::finalShading(
     mpScene->bindShaderData(mpFinalShading->getRootVar()[kSceneVar]);
 
     // auto var = mpFinalShading["CB"]["gFinalShading"];
-    // auto var = mpFinalShading->getRootVar()["gFinalShading"];    // 原
-    // start
-    auto var = mpFinalShading->getRootVar()["CB"]["gFinalShading"];
-    // end
+    auto var = mpFinalShading->getRootVar()["gFinalShading"];
 
     var["vbuffer"] = pVBuffer;
     var["frameDim"] = mFrameDim;
