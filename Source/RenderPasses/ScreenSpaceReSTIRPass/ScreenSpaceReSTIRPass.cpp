@@ -280,7 +280,8 @@ void ScreenSpaceReSTIRPass::execute(RenderContext* pRenderContext, const RenderD
         }
     };
     // Copy debug output if available. (only support first ReSTIR instance for now)
-    if (const auto& pDebug = renderData["debug"]->asTexture())
+    // if (const auto& pDebug = renderData["debug"]->asTexture())
+    if (const auto& pDebug = renderData.getTexture("debug"))
     {
         copyTexture(pDebug.get(), mpScreenSpaceReSTIR[0]->getDebugOutputTexture().get());
     }
@@ -317,7 +318,8 @@ void ScreenSpaceReSTIRPass::prepareSurfaceData(RenderContext* pRenderContext, co
         ProgramDesc desc;
         desc.addShaderModules(shaderModules);
         desc.addTypeConformances(typeConformances);
-        desc.addShaderLibrary(kPrepareSurfaceDataFile).csEntry("main").setShaderModel(ShaderModel::SM6_6);
+        // desc.addShaderLibrary(kPrepareSurfaceDataFile).csEntry("main").setShaderModel(ShaderModel::SM6_6);
+        desc.addShaderLibrary(kPrepareSurfaceDataFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
         mpPrepareSurfaceData = ComputePass::create(mpDevice, desc, defines, false);
         /*end*/
 
@@ -367,6 +369,7 @@ void ScreenSpaceReSTIRPass::finalShading(
         defines.add("GBUFFER_ADJUST_SHADING_NORMALS", mGBufferAdjustShadingNormals ? "1" : "0");
         // defines.add("USE_ENV_BACKGROUND", mpScene->useEnvBackground() ? "1" : "0");
         defines.add(getValidResourceDefines(kOutputChannels, renderData));
+        defines.add("SAMPLE_GENERATOR_TYPE", "SAMPLE_GENERATOR_UNIFORM");
 
         // start
         auto shaderModules = mpScene->getShaderModules();
@@ -375,19 +378,17 @@ void ScreenSpaceReSTIRPass::finalShading(
         ProgramDesc desc;
         desc.addShaderModules(shaderModules);
         desc.addTypeConformances(typeConformances);
-        desc.addShaderLibrary(kFinalShadingFile)
-            .csEntry("main")
-            .setShaderModel(ShaderModel::SM6_6);         // 跟 PrepareSurfaceData
+        desc.addShaderLibrary(kFinalShadingFile).csEntry("main").setShaderModel(ShaderModel::SM6_6); // 跟 PrepareSurfaceData
         mpFinalShading = ComputePass::create(mpDevice, desc, defines, false);
         // end
 
-        // mpFinalShading = ComputePass::create(mpDevice, kFinalShadingFile, "main", defines, false);
         mpFinalShading->setVars(nullptr);
     }
 
     mpFinalShading->addDefine("GBUFFER_ADJUST_SHADING_NORMALS", mGBufferAdjustShadingNormals ? "1" : "0");
     // mpFinalShading->addDefine("USE_ENV_BACKGROUND", mpScene->useEnvBackground() ? "1" : "0");
     mpFinalShading->addDefine("_USE_LEGACY_SHADING_CODE", "0");
+    mpFinalShading->addDefine("SAMPLE_GENERATOR_TYPE", "SAMPLE_GENERATOR_UNIFORM");
 
     // For optional I/O resources, set 'is_valid_<name>' defines to inform the program of which ones it can access.
     // TODO: This should be moved to a more general mechanism using Slang.
@@ -400,6 +401,7 @@ void ScreenSpaceReSTIRPass::finalShading(
     // auto var = mpFinalShading->getRootVar()["gFinalShading"];    // 原
     // start
     auto var = mpFinalShading->getRootVar()["CB"]["gFinalShading"];
+    // auto var = mpFinalShading->getRootVar()["gFinalShading"];
     // end
 
     var["vbuffer"] = pVBuffer;
@@ -411,9 +413,16 @@ void ScreenSpaceReSTIRPass::finalShading(
 
     // Bind output channels as UAV buffers.
     var = mpFinalShading->getRootVar();
+    // auto bind = [&](const ChannelDesc& channel)
+    // {
+    //     ref<Texture> pTex = renderData[channel.name]->asTexture();
+    //     var[channel.texname] = pTex;
+    // };
+    // for (const auto& channel : kOutputChannels)
+    //     bind(channel);
     auto bind = [&](const ChannelDesc& channel)
     {
-        ref<Texture> pTex = renderData[channel.name]->asTexture();
+        ref<Texture> pTex = renderData.getTexture(channel.name);
         var[channel.texname] = pTex;
     };
     for (const auto& channel : kOutputChannels)

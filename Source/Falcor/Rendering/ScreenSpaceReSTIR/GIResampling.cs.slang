@@ -22,7 +22,7 @@ import SurfaceData;
 import EvalContext;
 import Utils.Geometry.GeometryHelpers;
 import Utils.Color.ColorHelpers;
-import Rendering.Materials.StandardMaterial;
+// import Rendering.Materials.StandardMaterial;
 
 #ifndef RESTIR_TARGET_FUNCTION
 #define RESTIR_TARGET_FUNCTION 1
@@ -42,15 +42,14 @@ import Rendering.Materials.StandardMaterial;
 #define RESTIR_GI_USE_RESTIR_N 0
 #endif
 
-
 struct GIResampling
 {
     enum class ReSTIRMode
     {
-        InputOnly                   = 0,    ///< Output input samples directly.
-        TemporalOnly                = 1,    ///< Output temporal reuse result.
-        TemporalAndBiasedSpatial    = 2,    ///< Output temporal followed by biased spatial reuse result.
-        TemporalAndUnbiasedSpatial  = 3     ///< Output temporal followed by unbiased spatial reuse result.
+        InputOnly = 0,                 ///< Output input samples directly.
+        TemporalOnly = 1,              ///< Output temporal reuse result.
+        TemporalAndBiasedSpatial = 2,  ///< Output temporal followed by biased spatial reuse result.
+        TemporalAndUnbiasedSpatial = 3 ///< Output temporal followed by unbiased spatial reuse result.
     };
 
     // Static configuration.
@@ -74,22 +73,22 @@ struct GIResampling
     float normalThreshold;
     float depthThreshold;
 
-    uint2 frameDim = { 0, 0 };          ///< Frame dimension in pixels.
-    uint frameIndex;                    ///< Current frame index.
+    uint2 frameDim = {0, 0}; ///< Frame dimension in pixels.
+    uint frameIndex;         ///< Current frame index.
 
-    uint temporalMaxSamples;            ///< Maximum M value for temporal reservoir.
-    uint spatialMaxSamples;             ///< Maximum M value for spatial reservoir.
-    uint reservoirCount;                ///< Number of reservoirs per pixel.
-    uint maxSampleAge;                  ///< Maximum frames that a sample can survive.
-    bool forceClearReservoirs;          ///< Clear temporal and spatial reservoirs.
+    uint temporalMaxSamples;   ///< Maximum M value for temporal reservoir.
+    uint spatialMaxSamples;    ///< Maximum M value for spatial reservoir.
+    uint reservoirCount;       ///< Number of reservoirs per pixel.
+    uint maxSampleAge;         ///< Maximum frames that a sample can survive.
+    bool forceClearReservoirs; ///< Clear temporal and spatial reservoirs.
 
-    Texture2D<PackedHitInfo> vbuffer;   ///< Fullscreen V-buffer for the primary hits.
-    Texture2D<uint> sampleCount;        ///< Optional input sample count buffer. Only valid when kSamplesPerPixel == 0.
-    Texture2D<uint> sampleOffset;       ///< Output offset into per-sample buffers. Only valid when kSamplesPerPixel == 0.
+    Texture2D<PackedHitInfo> vbuffer; ///< Fullscreen V-buffer for the primary hits.
+    Texture2D<uint> sampleCount;      ///< Optional input sample count buffer. Only valid when kSamplesPerPixel == 0.
+    Texture2D<uint> sampleOffset;     ///< Output offset into per-sample buffers. Only valid when kSamplesPerPixel == 0.
 
     Texture2D<float2> motionVectors;
 
-    RWTexture2D<float4> outputColor;    ///< Output resolved color.
+    RWTexture2D<float4> outputColor; ///< Output resolved color.
 
     Texture2D<uint> normalDepth;
     Texture2D<uint> prevNormalDepth;
@@ -116,7 +115,7 @@ struct GIResampling
     {
         if (kTargetFunction == 1)
         {
-            float3 L = normalize(samplePosition - position);            
+            float3 L = normalize(samplePosition - position);
             float3 fCos = max(0.1f, evalContext.evalBRDF(L) * saturate(dot(normal, L)));
             float pdf = luminance(radiance * fCos);
             return pdf;
@@ -127,19 +126,17 @@ struct GIResampling
         }
     }
 
-    uint toLinearIndex(uint2 pixel)
-    {
-        return pixel.y * frameDim.x + pixel.x;
-    }
+    uint toLinearIndex(uint2 pixel) { return pixel.y * frameDim.x + pixel.x; }
 
     bool evalSegmentVisibility(float3 pos, float3 endPoint)
     {
         float3 offset = endPoint - pos;
         float tMax = length(offset);
         float3 dir = offset / tMax;
-        RayDesc ray = { pos, 0.001f, dir, 0.999* tMax };
+        RayDesc ray = {pos, 0.001f, dir, 0.999 * tMax};
         SceneRayQuery<kUseAlphaTest> sceneRayQuery;
-        return sceneRayQuery.traceVisibilityRay(ray, RAY_FLAG_NONE, 0xff);
+        // return sceneRayQuery.traceVisibilityRay(ray, RAY_FLAG_NONE, 0xff);
+        return sceneRayQuery.traceVisibilityRay(Ray(ray.Origin, ray.Direction, ray.TMin, ray.TMax), RAY_FLAG_NONE, 0xff);
     }
 
     /** Randomly update reservoir.
@@ -149,7 +146,13 @@ struct GIResampling
         \param[inout] weightSum The output reservoir's weight.
         \param[inout] dstReservoir The output reservoir.
     */
-    bool updateReservoir(float weight, GIReservoir srcReservoir, inout TinyUniformSampleGenerator sg, inout float weightSum, inout GIReservoir dstReservoir)
+    bool updateReservoir(
+        float weight,
+        GIReservoir srcReservoir,
+        inout TinyUniformSampleGenerator sg,
+        inout float weightSum,
+        inout GIReservoir dstReservoir
+    )
     {
         weightSum += weight;
         dstReservoir.M += srcReservoir.M;
@@ -199,7 +202,6 @@ struct GIResampling
         float3 worldPosition = computeRayOrigin(sfd.pos, -sfd.faceNormal);
         float3 worldNormal = evalContext.N;
 
-
         // Reproject pixel position.
         float4 prevClip = mul(float4(worldPosition, 1.f), prevViewProj);
         float3 prevScreen = prevClip.xyz / prevClip.w;
@@ -215,7 +217,8 @@ struct GIResampling
             const uint prevPixelIndex = getPixelIndex(prevPixel);
 
             // Setup evaluation context.
-            EvalContext prevEvalContext = EvalContext::create(prevPixelIndex, frameDim, SurfaceData::createFromPacked(prevSurfaceData[prevPixelIndex]));
+            EvalContext prevEvalContext =
+                EvalContext::create(prevPixelIndex, frameDim, SurfaceData::createFromPacked(prevSurfaceData[prevPixelIndex]));
 
             isPrevValid &= length(prevEvalContext.pos - evalContext.pos) < 0.1f && dot(prevEvalContext.N, evalContext.N) > 0.8f;
             float rand = sampleNext1D(sg);
@@ -230,7 +233,7 @@ struct GIResampling
         for (uint localIndex = 0; localIndex < reservoirCount; ++localIndex)
         {
             // Read latest samples generated by create gather point shader.
-            uint initialSampleIndex = kReSTIRGIUseReSTIRN ? localIndex : 0;// 1;
+            uint initialSampleIndex = kReSTIRGIUseReSTIRN ? localIndex : 0; // 1;
             GIReservoir initialSample = readReservoir(initialSamples, pixelIndex, initialSampleIndex, frameDim.x * frameDim.y);
 
             int indexOffsetBegin = 2 * localIndex;
@@ -306,7 +309,13 @@ struct GIResampling
 
             print("wSum", wSum);
             float avgWSum = wSum / temporalReservoir.M;
-            pNew = evalTargetFunction(temporalReservoir.radiance, temporalReservoir.creationNormal, temporalReservoir.creationPoint, temporalReservoir.position, evalContext);
+            pNew = evalTargetFunction(
+                temporalReservoir.radiance,
+                temporalReservoir.creationNormal,
+                temporalReservoir.creationPoint,
+                temporalReservoir.position,
+                evalContext
+            );
             temporalReservoir.avgWeight = pNew <= 0.f ? 0.f : avgWSum / pNew;
             print("avgWSum", avgWSum);
             print("pNew", pNew);
@@ -320,7 +329,7 @@ struct GIResampling
 
             if (kReSTIRMode == ReSTIRMode::TemporalOnly)
             {
-                writeReservoir(reservoirs, pixelIndex, spatialTargetIndex, frameDim.x* frameDim.y, temporalReservoir);
+                writeReservoir(reservoirs, pixelIndex, spatialTargetIndex, frameDim.x * frameDim.y, temporalReservoir);
                 continue;
             }
 
@@ -338,7 +347,14 @@ struct GIResampling
             // Add near sample to s reservoir.
             uint prevIdx2;
             GIReservoir neighborReservoir = temporalReservoir;
-            float wSumS = max(0.f, spatialReservoir.avgWeight) * spatialReservoir.M * evalTargetFunction(spatialReservoir.radiance, spatialReservoir.creationNormal, spatialReservoir.creationPoint, spatialReservoir.position, evalContext);
+            float wSumS = max(0.f, spatialReservoir.avgWeight) * spatialReservoir.M *
+                          evalTargetFunction(
+                              spatialReservoir.radiance,
+                              spatialReservoir.creationNormal,
+                              spatialReservoir.creationPoint,
+                              spatialReservoir.position,
+                              evalContext
+                          );
 
             // Determine maximum iteration based on current sample count.
             // If sample count is low, use more iterations to boost sample count.
@@ -373,15 +389,17 @@ struct GIResampling
                 // Get search radius.
                 const float radiusShrinkRatio = 0.5f;
                 const float minSearchRadius = 10.f;
-                searchRadius = max(searchRadius* radiusShrinkRatio, minSearchRadius);
+                searchRadius = max(searchRadius * radiusShrinkRatio, minSearchRadius);
                 // Randomly sample a neighbor.
                 float3 randOffset = sampleNext3D(sg);
                 randOffset = randOffset * 2.f - 1.f;
                 int2 neighborID = prevID + randOffset.xy * searchRadius;
 
                 uint2 boundary = frameDim.xy - 1;
-                neighborID.x = neighborID.x < 0 ? -neighborID.x : (neighborID.x > boundary.x ? 2 * boundary.x - neighborID.x : neighborID.x);
-                neighborID.y = neighborID.y < 0 ? -neighborID.y : (neighborID.y > boundary.y ? 2 * boundary.y - neighborID.y : neighborID.y);
+                neighborID.x =
+                    neighborID.x < 0 ? -neighborID.x : (neighborID.x > boundary.x ? 2 * boundary.x - neighborID.x : neighborID.x);
+                neighborID.y =
+                    neighborID.y < 0 ? -neighborID.y : (neighborID.y > boundary.y ? 2 * boundary.y - neighborID.y : neighborID.y);
 
                 // Check geometric similarity.
                 float4 neighborNormalDepth = unpackNormalDepth(prevNormalDepth[neighborID]);
@@ -392,7 +410,9 @@ struct GIResampling
                 prevIdx2 = toLinearIndex(neighborID);
 
                 bool bReuseSpatialSample = (kReSTIRMode == ReSTIRMode::TemporalAndUnbiasedSpatial ? i % 2 == 1 : 0);
-                neighborReservoir = readReservoir(prevReservoirs, prevIdx2, bReuseSpatialSample ? spatialSourceIndex : temporalSourceIndex, frameDim.x * frameDim.y);
+                neighborReservoir = readReservoir(
+                    prevReservoirs, prevIdx2, bReuseSpatialSample ? spatialSourceIndex : temporalSourceIndex, frameDim.x * frameDim.y
+                );
 
                 // Discard black samples.
                 if (neighborReservoir.M <= 0)
@@ -403,7 +423,8 @@ struct GIResampling
                 // Calculate target function.
                 float3 offsetB = neighborReservoir.position - neighborReservoir.creationPoint;
                 float3 offsetA = neighborReservoir.position - worldPosition;
-                float pNewTN = evalTargetFunction(neighborReservoir.radiance, worldNormal, worldPosition, neighborReservoir.position, evalContext);
+                float pNewTN =
+                    evalTargetFunction(neighborReservoir.radiance, worldNormal, worldPosition, neighborReservoir.position, evalContext);
                 // Discard back-face.
                 if (dot(worldNormal, offsetA) <= 0.f)
                 {
@@ -440,7 +461,8 @@ struct GIResampling
 
                 // Conditionally update spatial reservoir.
                 bool isUpdated = updateReservoir(wiTN, neighborReservoir, sg, wSumS, spatialReservoir);
-                if (isUpdated) reuseID = nReuse;
+                if (isUpdated)
+                    reuseID = nReuse;
 
                 // Update reuse history.
                 positionList[nReuse] = neighborReservoir.creationPoint;
@@ -502,8 +524,10 @@ struct GIResampling
                     }
                 }
 
-                if (kReSTIRMISWeight == 0) m = totalWeight <= 0.f ? 0.f : 1.f / totalWeight;
-                else m = totalWeight <= 0.f ? 0.f : chosenWeight / totalWeight;
+                if (kReSTIRMISWeight == 0)
+                    m = totalWeight <= 0.f ? 0.f : 1.f / totalWeight;
+                else
+                    m = totalWeight <= 0.f ? 0.f : chosenWeight / totalWeight;
             }
 
             pNew = evalTargetFunction(spatialReservoir.radiance, worldNormal, worldPosition, spatialReservoir.position, evalContext);
@@ -516,7 +540,7 @@ struct GIResampling
             spatialReservoir.age++;
 
             // Write spatial reservoir.
-            writeReservoir(reservoirs, pixelIndex, spatialTargetIndex, frameDim.x* frameDim.y, spatialReservoir);
+            writeReservoir(reservoirs, pixelIndex, spatialTargetIndex, frameDim.x * frameDim.y, spatialReservoir);
         }
     }
 };
@@ -526,8 +550,8 @@ cbuffer CB
     GIResampling gGIResampling;
 }
 
-[numthreads(16, 16, 1)]
-void main(uint3 dispatchThreadId : SV_DispatchThreadID)
+[numthreads(16, 16, 1)] void main(uint3 dispatchThreadId
+                                  : SV_DispatchThreadID)
 {
     printSetPixel(dispatchThreadId.xy);
     gGIResampling.execute(dispatchThreadId.xy);

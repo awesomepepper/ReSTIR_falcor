@@ -32,7 +32,7 @@ const char kEvaluateFinalSamplesFile[] = "Rendering/ScreenSpaceReSTIR/EvaluateFi
 const char kGIResamplingFile[] = "Rendering/ScreenSpaceReSTIR/GIResampling.cs.slang";
 const char kGIClearReservoirsFile[] = "Rendering/ScreenSpaceReSTIR/GIClearReservoirs.cs.slang";
 
-//const std::string kShaderModel = "6_5";
+// const std::string kShaderModel = "6_5";
 const std::string kShaderModel = "SM6_5";
 
 const std::string kSurfaceData = "surfaceData";
@@ -451,7 +451,8 @@ void ScreenSpaceReSTIR::updateReSTIRGI(RenderContext* pRenderContext, const ref<
         auto rootVar = mpGIResampling->getRootVar();
         mpPixelDebug->prepareProgram(mpGIResampling->getProgram(), rootVar);
 
-        mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar, 0);
+        //mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar, 0);
+        mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar["gScene"], 0);
 
         auto var = rootVar["CB"]["gGIResampling"];
         var[kNeighborOffsets] = mpNeighborOffsets;
@@ -789,13 +790,20 @@ void ScreenSpaceReSTIR::updatePrograms()
 
         if (!mpUpdateEmissiveTriangles)
         {
+            // auto defines = mpScene->getSceneDefines();
+
+            auto shaderModules = mpScene->getShaderModules();
+            auto typeConformances = mpScene->getTypeConformances();
+
             ProgramDesc desc;
+            desc.addShaderModules(shaderModules);
+            desc.addTypeConformances(typeConformances);
             desc.addShaderLibrary(kUpdateEmissiveTriangles).csEntry("main").setShaderModel(Falcor::stringToEnum<ShaderModel>(kShaderModel));
             mpUpdateEmissiveTriangles = ComputePass::create(mpDevice, desc, defines, false);
         }
 
-        //mpScene->bindShaderData(mpUpdateEmissiveTriangles->getRootVar()[kSceneVar]);
-        mpScene->bindShaderData(mpUpdateEmissiveTriangles->getRootVar()["CB"][kSceneVar]);
+        // mpScene->bindShaderData(mpUpdateEmissiveTriangles->getRootVar()[kSceneVar]);
+        // mpScene->bindShaderData(mpUpdateEmissiveTriangles->getRootVar()["CB"][kSceneVar]);
         mpUpdateEmissiveTriangles->getProgram()->addDefines(defines);
         mpUpdateEmissiveTriangles->setVars(nullptr);
     }
@@ -816,12 +824,17 @@ void ScreenSpaceReSTIR::updatePrograms()
 
         if (!mpGenerateLightTiles)
         {
+            auto shaderModules = mpScene->getShaderModules();
+            auto typeConformances = mpScene->getTypeConformances();
+
             ProgramDesc desc;
+            desc.addShaderModules(shaderModules);
+            desc.addTypeConformances(typeConformances);
             desc.addShaderLibrary(kGenerateLightTilesFile).csEntry("main").setShaderModel(Falcor::stringToEnum<ShaderModel>(kShaderModel));
             mpGenerateLightTiles = ComputePass::create(mpDevice, desc, defines, false);
         }
 
-        mpScene->bindShaderData(mpGenerateLightTiles->getRootVar()[kSceneVar]);
+        // mpScene->bindShaderData(mpGenerateLightTiles->getRootVar()[kSceneVar]);
         mpGenerateLightTiles->getProgram()->addDefines(defines);
         mpGenerateLightTiles->setVars(nullptr);
     }
@@ -844,12 +857,17 @@ void ScreenSpaceReSTIR::updatePrograms()
 
         if (!mpInitialResampling)
         {
+            auto shaderModules = mpScene->getShaderModules();
+            auto typeConformances = mpScene->getTypeConformances();
+
             ProgramDesc desc;
+            desc.addShaderModules(shaderModules);
+            desc.addTypeConformances(typeConformances);
             desc.addShaderLibrary(kInitialResamplingFile).csEntry("main").setShaderModel(Falcor::stringToEnum<ShaderModel>(kShaderModel));
             mpInitialResampling = ComputePass::create(mpDevice, desc, defines, false);
         }
 
-        mpScene->bindShaderData(mpInitialResampling->getRootVar()[kSceneVar]);
+        // mpScene->bindShaderData(mpInitialResampling->getRootVar()[kSceneVar]);
         mpInitialResampling->getProgram()->addDefines(defines);
         mpInitialResampling->setVars(nullptr);
     }
@@ -870,12 +888,17 @@ void ScreenSpaceReSTIR::updatePrograms()
 
         if (!mpTemporalResampling)
         {
+            auto shaderModules = mpScene->getShaderModules();
+            auto typeConformances = mpScene->getTypeConformances();
+
             ProgramDesc desc;
+            desc.addShaderModules(shaderModules);
+            desc.addTypeConformances(typeConformances);
             desc.addShaderLibrary(kTemporalResamplingFile).csEntry("main").setShaderModel(Falcor::stringToEnum<ShaderModel>(kShaderModel));
             mpTemporalResampling = ComputePass::create(mpDevice, desc, defines, false);
         }
 
-        mpScene->bindShaderData(mpTemporalResampling->getRootVar()[kSceneVar]);
+        // mpScene->bindShaderData(mpTemporalResampling->getRootVar()[kSceneVar]);
         mpTemporalResampling->getProgram()->addDefines(defines);
         mpTemporalResampling->setVars(nullptr);
     }
@@ -892,12 +915,17 @@ void ScreenSpaceReSTIR::updatePrograms()
 
         if (!mpSpatialResampling)
         {
+            auto shaderModules = mpScene->getShaderModules();
+            auto typeConformances = mpScene->getTypeConformances();
+
             ProgramDesc desc;
+            desc.addShaderModules(shaderModules);
+            desc.addTypeConformances(typeConformances);
             desc.addShaderLibrary(kSpatialResamplingFile).csEntry("main").setShaderModel(Falcor::stringToEnum<ShaderModel>(kShaderModel));
             mpSpatialResampling = ComputePass::create(mpDevice, desc, defines, false);
         }
 
-        mpScene->bindShaderData(mpSpatialResampling->getRootVar()[kSceneVar]);
+        // mpScene->bindShaderData(mpSpatialResampling->getRootVar()[kSceneVar]);
         mpSpatialResampling->getProgram()->addDefines(defines);
         mpSpatialResampling->setVars(nullptr);
     }
@@ -912,17 +940,25 @@ void ScreenSpaceReSTIR::updatePrograms()
 
         if (!mpEvaluateFinalSamples)
         {
+            auto shaderModules = mpScene->getShaderModules();
+            auto typeConformances = mpScene->getTypeConformances();
+
             ProgramDesc desc;
+            desc.addShaderModules(shaderModules);
+            desc.addTypeConformances(typeConformances);
             desc.addShaderLibrary(kEvaluateFinalSamplesFile)
                 .csEntry("main")
                 .setShaderModel(Falcor::stringToEnum<ShaderModel>(kShaderModel));
             mpEvaluateFinalSamples = ComputePass::create(mpDevice, desc, defines, false);
         }
 
-        mpScene->bindShaderData(mpEvaluateFinalSamples->getRootVar()[kSceneVar]);
+        // mpScene->bindShaderData(mpEvaluateFinalSamples->getRootVar()[kSceneVar]);
         mpEvaluateFinalSamples->getProgram()->addDefines(defines);
         mpEvaluateFinalSamples->setVars(nullptr);
     }
+
+    // GIClearReservoirs
+    // GIResampling
 
     {
         DefineList defines = commonDefines;
@@ -933,7 +969,12 @@ void ScreenSpaceReSTIR::updatePrograms()
 
         if (!mpGIClearReservoirs)
         {
+            auto shaderModules = mpScene->getShaderModules();
+            auto typeConformances = mpScene->getTypeConformances();
+
             ProgramDesc desc;
+            desc.addShaderModules(shaderModules);
+            desc.addTypeConformances(typeConformances);
             desc.addShaderLibrary(kGIClearReservoirsFile).csEntry("main").setShaderModel(Falcor::stringToEnum<ShaderModel>(kShaderModel));
             mpGIClearReservoirs = ComputePass::create(mpDevice, desc, defines, false);
         }
@@ -942,12 +983,17 @@ void ScreenSpaceReSTIR::updatePrograms()
 
         if (!mpGIResampling)
         {
+            auto shaderModules = mpScene->getShaderModules();
+            auto typeConformances = mpScene->getTypeConformances();
+
             ProgramDesc desc;
+            desc.addShaderModules(shaderModules);
+            desc.addTypeConformances(typeConformances);
             desc.addShaderLibrary(kGIResamplingFile).csEntry("main").setShaderModel(Falcor::stringToEnum<ShaderModel>(kShaderModel));
             mpGIResampling = ComputePass::create(mpDevice, desc, defines, false);
         }
 
-        mpScene->bindShaderData(mpGIResampling->getRootVar()[kSceneVar]);
+        // mpScene->bindShaderData(mpGIResampling->getRootVar()[kSceneVar]);
         mpGIResampling->getProgram()->addDefines(defines);
         mpGIResampling->setVars(nullptr);
     }
@@ -1001,7 +1047,8 @@ void ScreenSpaceReSTIR::initialResampling(RenderContext* pRenderContext)
 
     auto rootVar = mpInitialResampling->getRootVar();
 
-    mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar, 0);
+    //mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar, 0);
+    mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar["gScene"], 0);
     mpPixelDebug->prepareProgram(mpInitialResampling->getProgram(), rootVar);
 
     auto var = rootVar["CB"]["gInitialResampling"];
@@ -1036,7 +1083,9 @@ void ScreenSpaceReSTIR::temporalResampling(RenderContext* pRenderContext, const 
 
     auto rootVar = mpTemporalResampling->getRootVar();
 
-    mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar, 0);
+    //mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar, 0);
+    mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar["gScene"], 0);
+
     mpPixelDebug->prepareProgram(mpTemporalResampling->getProgram(), rootVar);
 
     auto var = rootVar["CB"]["gTemporalResampling"];
@@ -1067,7 +1116,9 @@ void ScreenSpaceReSTIR::spatialResampling(RenderContext* pRenderContext)
 
     auto rootVar = mpSpatialResampling->getRootVar();
 
-    mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar, 0);
+    //mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar, 0);
+    mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar["gScene"], 0);
+
     mpPixelDebug->prepareProgram(mpSpatialResampling->getProgram(), rootVar);
 
     auto var = rootVar["CB"]["gSpatialResampling"];
@@ -1101,7 +1152,9 @@ void ScreenSpaceReSTIR::evaluateFinalSamples(RenderContext* pRenderContext)
 
     auto rootVar = mpEvaluateFinalSamples->getRootVar();
 
-    mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar, 0);
+    //mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar, 0);
+    mpScene->bindShaderDataForRaytracing(pRenderContext, rootVar["gScene"], 0);
+
     mpPixelDebug->prepareProgram(mpEvaluateFinalSamples->getProgram(), rootVar);
 
     auto var = rootVar["CB"]["gEvaluateFinalSamples"];

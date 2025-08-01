@@ -8,9 +8,16 @@
  # license agreement from NVIDIA CORPORATION is strictly prohibited.
  **************************************************************************/
 import LoadShadingData;
-import Rendering.Materials.StandardMaterial;
+import Scene.Intersection;
+// import Rendering.Materials.StandardMaterial;
 import Rendering.Materials.Microfacet;
-import Experimental.ScreenSpaceReSTIR.ScreenSpaceReSTIR;
+import Rendering.ScreenSpaceReSTIR.ScreenSpaceReSTIR;
+import Rendering.Materials.IsotropicGGX;
+import Utils.Sampling.TinyUniformSampleGenerator;
+
+// #define SAMPLE_GENERATOR_TYPE SAMPLE_GENERATOR_UNIFORM
+
+import Utils.Sampling.SampleGenerator;
 
 RWTexture2D<float4> gColor;
 RWTexture2D<float4> gEmission;
@@ -23,16 +30,16 @@ RWTexture2D<float4> gDebug;
 #define is_valid(name) (is_valid_##name != 0)
 
 /** Perform shading with final samples from ReSTIR.
-*/
+ */
 struct FinalShading
 {
     // Static configuration.
-    //static const bool kUseEnvBackground = USE_ENV_BACKGROUND;
+    // static const bool kUseEnvBackground = USE_ENV_BACKGROUND;
 
     Texture2D<PackedHitInfo> vbuffer;
 
     ScreenSpaceReSTIR screenSpaceReSTIR;
-    StandardMaterial standardMaterial;
+    // StandardMaterial standardMaterial;
 
     uint2 frameDim;
 
@@ -41,7 +48,8 @@ struct FinalShading
 
     void execute(uint2 pixel)
     {
-        if (any(pixel >= frameDim)) return;
+        if (any(pixel >= frameDim))
+            return;
 
         float3 color = {};
         float3 emission = {};
@@ -61,63 +69,107 @@ struct FinalShading
             float3 Li;
             bool valid = screenSpaceReSTIR.getFinalSample(pixel, dir, distance, Li);
 
+            ImplicitLodTextureSampler lod = ImplicitLodTextureSampler();
+            // uint hints = (uint)MaterialInstanceHints::None;
+            // let mi = gScene.materials.getMaterialInstance(sd, lod, hints);
+            let mi = gScene.materials.getMaterialInstance(sd, lod);
+
             // Evaluate diffuse and specular lobes.
             float3 diffuse = {};
             float3 specular = {};
             if (valid)
             {
-                sd.setActiveLobes((uint)LobeType::DiffuseReflection);
-                diffuse = standardMaterial.eval(sd, dir) * Li;
+                // // Get material instance.
+                // // We're passing a default texture sampler and no hints, since they're not available here.
+                // // TODO: Evaluate if this is the correct long-term solution.
+                // ImplicitLodTextureSampler implicitSampler = ImplicitLodTextureSampler();
+                // StandardMaterialInstance materialInstance =
+                //     standardMaterial.setupMaterialInstance(gScene.materials, sd, implicitSampler, (uint)MaterialInstanceHints::None);
 
-                sd.setActiveLobes((uint)LobeType::SpecularReflection);
-                specular = standardMaterial.eval(sd, dir) * Li;
+                // Create a sample generator. Using pixel coordinate and a dummy sample number (0).
+                SampleGenerator sg = SampleGenerator(pixel, 0);
+                // // 这里的frameIndex在整个ReSTIR中的各种采样和重采样器中出现了好几次，需确认是不是GIResampling里的那个
+                // TinyUniformSampleGenerator sg = TinyUniformSampleGenerator(pixel, gGIResampling.frameIndex);
+
+                sd.mtl.setActiveLobes((uint)LobeType::DiffuseReflection);
+                // diffuse = materialInstance.eval(sd, dir, sg) * Li;
+                diffuse = mi.eval(sd, dir, sg) * Li;
+
+                sd.mtl.setActiveLobes((uint)LobeType::SpecularReflection);
+                // specular = materialInstance.eval(sd, dir, sg) * Li;
+                specular = mi.eval(sd, dir, sg) * Li;
 
                 hitT = distance;
             }
 
-            emission = sd.emissive;
+            // emission = sd.emissive;
+            emission = gScene.materials.getBasicMaterialData(sd.materialID).emissive;
 
             color += diffuse + specular + emission;
 
             // Demodulate diffuse reflectance (albedo) from diffuse color.
-            diffuseReflectance += sd.diffuse;
+            // diffuseReflectance += sd.diffuse;
+            // diffuseReflectance += gScene.materials.getBasicMaterialData(sd.materialID).diffuse;
+            diffuseReflectance += gScene.materials.getBasicMaterialData(sd.materialID).baseColor.rgb;
             float3 diffuseFactor = diffuseReflectance <= 0.f ? 0.f : 1.f / diffuseReflectance;
             diffuseIllumination += diffuse * diffuseFactor;
 
             // Demodulate preintegrated specular reflectance from specular color.
-            specularReflectance += approxSpecularIntegralGGX(sd.specular, sd.linearRoughness * sd.linearRoughness, sd.NdotV);
+            // float roughness = gScene.materials.getBasicMaterialData(sd.materialID).linearRoughness;
+            float roughness = gScene.materials.getBasicMaterialData(sd.materialID).specular.g;
+            // specularReflectance += approxSpecularIntegralGGX(sd.specular, sd.linearRoughness * sd.linearRoughness, sd.NdotV);
+            // specularReflectance +=
+            // approxSpecularIntegralGGX(gScene.materials.getBasicMaterialData(sd.materialID).specular, roughness * roughness, sd.NdotV);
+            specularReflectance += approxSpecularIntegralGGX(
+                gScene.materials.getBasicMaterialData(sd.materialID).specular.rgb, roughness * roughness, dot(sd.frame.N, sd.V)
+            );
+            // specularReflectance += sd.specular;
+            // roughness = sd.linearRoughness;
+
             float3 specularFactor = specularReflectance <= 0.f ? 0.f : 1.f / specularReflectance;
             specularIllumination += specular * specularFactor;
         }
         else
         {
-            //if (kUseEnvBackground)
+            // if (kUseEnvBackground)
             //{
-            //    float3 dir = gScene.camera.computeRayPinhole(pixel, frameDim).dir;
-            //    emission = gScene.envMap.eval(dir);
-            //    color = emission;
-            //}
+            //     float3 dir = gScene.camera.computeRayPinhole(pixel, frameDim).dir;
+            //     emission = gScene.envMap.eval(dir);
+            //     color = emission;
+            // }
         }
 
         // Write active outputs.
 
         if (ReSTIRInstanceID == 0)
         {
-            if (is_valid(gColor)) gColor[pixel] = float4(color, 1.f) / numReSTIRInstances;
-            if (is_valid(gEmission)) gEmission[pixel] = float4(emission, 1.f) / numReSTIRInstances;
-            if (is_valid(gDiffuseReflectance)) gDiffuseReflectance[pixel] = float4(diffuseReflectance, 1.f) / numReSTIRInstances;
-            if (is_valid(gDiffuseIllumination)) gDiffuseIllumination[pixel] = float4(diffuseIllumination, hitT) / numReSTIRInstances;
-            if (is_valid(gSpecularReflectance)) gSpecularReflectance[pixel] = float4(specularReflectance, 1.f) / numReSTIRInstances;
-            if (is_valid(gSpecularIllumination)) gSpecularIllumination[pixel] = float4(specularIllumination, hitT) / numReSTIRInstances;
+            if (is_valid(gColor))
+                gColor[pixel] = float4(color, 1.f) / numReSTIRInstances;
+            if (is_valid(gEmission))
+                gEmission[pixel] = float4(emission, 1.f) / numReSTIRInstances;
+            if (is_valid(gDiffuseReflectance))
+                gDiffuseReflectance[pixel] = float4(diffuseReflectance, 1.f) / numReSTIRInstances;
+            if (is_valid(gDiffuseIllumination))
+                gDiffuseIllumination[pixel] = float4(diffuseIllumination, hitT) / numReSTIRInstances;
+            if (is_valid(gSpecularReflectance))
+                gSpecularReflectance[pixel] = float4(specularReflectance, 1.f) / numReSTIRInstances;
+            if (is_valid(gSpecularIllumination))
+                gSpecularIllumination[pixel] = float4(specularIllumination, hitT) / numReSTIRInstances;
         }
         else
         {
-            if (is_valid(gColor)) gColor[pixel] += float4(color, 1.f) / numReSTIRInstances;
-            if (is_valid(gEmission)) gEmission[pixel] += float4(emission, 1.f) / numReSTIRInstances;
-            if (is_valid(gDiffuseReflectance)) gDiffuseReflectance[pixel] += float4(diffuseReflectance, 1.f) / numReSTIRInstances;
-            if (is_valid(gDiffuseIllumination)) gDiffuseIllumination[pixel] += float4(diffuseIllumination, hitT) / numReSTIRInstances;
-            if (is_valid(gSpecularReflectance)) gSpecularReflectance[pixel] += float4(specularReflectance, 1.f) / numReSTIRInstances;
-            if (is_valid(gSpecularIllumination)) gSpecularIllumination[pixel] += float4(specularIllumination, hitT) / numReSTIRInstances;
+            if (is_valid(gColor))
+                gColor[pixel] += float4(color, 1.f) / numReSTIRInstances;
+            if (is_valid(gEmission))
+                gEmission[pixel] += float4(emission, 1.f) / numReSTIRInstances;
+            if (is_valid(gDiffuseReflectance))
+                gDiffuseReflectance[pixel] += float4(diffuseReflectance, 1.f) / numReSTIRInstances;
+            if (is_valid(gDiffuseIllumination))
+                gDiffuseIllumination[pixel] += float4(diffuseIllumination, hitT) / numReSTIRInstances;
+            if (is_valid(gSpecularReflectance))
+                gSpecularReflectance[pixel] += float4(specularReflectance, 1.f) / numReSTIRInstances;
+            if (is_valid(gSpecularIllumination))
+                gSpecularIllumination[pixel] += float4(specularIllumination, hitT) / numReSTIRInstances;
         }
     }
 };
@@ -127,8 +179,4 @@ cbuffer CB
     FinalShading gFinalShading;
 };
 
-[numthreads(16, 16, 1)]
-void main(uint3 dispatchThreadId : SV_DispatchThreadID)
-{
-    gFinalShading.execute(dispatchThreadId.xy);
-}
+[numthreads(16, 16, 1)] void main(uint3 dispatchThreadId : SV_DispatchThreadID) { gFinalShading.execute(dispatchThreadId.xy); }

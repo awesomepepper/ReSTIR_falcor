@@ -13,12 +13,13 @@ __exported import Scene.HitInfo;
 import Scene.Shading;
 import Utils.Math.MathHelpers;
 import Rendering.Materials.Microfacet;
+import Rendering.Materials.IsotropicGGX;
 import Rendering.Materials.Fresnel;
 import Lights;
 __exported import SurfaceData;
 
 /** Context for evaluating light samples.
-*/
+ */
 struct EvalContext
 {
     // Static configuration.
@@ -53,17 +54,15 @@ struct EvalContext
         evalContext.diffuseSpecularMix = weightSum > 1e-7f ? (surfaceData.diffuseWeight / weightSum) : 1.f;
         // Clamp roughness to avoid numerical instability when evaluating the GGX lobe.
         // This is the same threshold as used in the legacy Falcor BRDF.
-        float roughness = max(ROUGHNESS_THRESHOLD, surfaceData.specularRoughness);
+        // float roughness = max(ROUGHNESS_THRESHOLD, surfaceData.specularRoughness);
+        float roughness = max(0.01, surfaceData.specularRoughness);
         evalContext.ggxAlpha = roughness * roughness;
         evalContext.lobes = surfaceData.lobes;
         evalContext.valid = surfaceData.isValid();
         return evalContext;
     }
 
-    bool isValid()
-    {
-        return valid;
-    }
+    bool isValid() { return valid; }
 
     /** Compare depth and normal between this and another pixel and determine if other sample is valid for reuse.
         \param[in] otherNormalDepth Normal and depth of other pixel.
@@ -73,9 +72,7 @@ struct EvalContext
     */
     bool isValidNeighbor(float4 otherNormalDepth, float normalThreshold, float depthThreshold)
     {
-        return
-            dot(N, otherNormalDepth.xyz) >= normalThreshold &&
-            abs((depth - otherNormalDepth.w)) <= depthThreshold * depth;
+        return dot(N, otherNormalDepth.xyz) >= normalThreshold && abs((depth - otherNormalDepth.w)) <= depthThreshold * depth;
     }
 
     /** Compare depth and normal between this and another pixel and determine if other sample is valid for reuse.
@@ -123,7 +120,8 @@ struct EvalContext
 
         if (xi.x < diffuseSpecularMix)
         {
-            if (specularOnly) return false;
+            if (specularOnly)
+                return false;
             float pdf;
             dir = toGlobal(sample_cosine_hemisphere_concentric(xi.yz, pdf));
         }
@@ -183,7 +181,8 @@ struct EvalContext
     {
         float brdfWeight = evalBRDF(evaluatedLightSample.dir);
         float weight = max(0.f, evaluatedLightSample.emission * evaluatedLightSample.geomFactor * brdfWeight);
-        if (withVisibility) weight *= evalVisibility(evaluatedLightSample);
+        if (withVisibility)
+            weight *= evalVisibility(evaluatedLightSample);
         return weight;
     }
 
@@ -203,7 +202,9 @@ struct EvalContext
     */
     float evalVisibility(const EvaluatedLightSample evaluatedLightSample)
     {
-        RayDesc ray = { pos, 0.f, evaluatedLightSample.dir, max(0.f, evaluatedLightSample.distance - Lights::kRayEpsilon) };
+        // RayDesc ray = {pos, 0.f, evaluatedLightSample.dir, max(0.f, evaluatedLightSample.distance - Lights::kRayEpsilon)};
+        // Ray ray = Ray(pos, 0.f, evaluatedLightSample.dir, max(0.f, evaluatedLightSample.distance - Lights::kRayEpsilon));
+        Ray ray = Ray(pos, evaluatedLightSample.dir, 0.f, max(0.f, evaluatedLightSample.distance - Lights::kRayEpsilon));
         SceneRayQuery<kUseAlphaTest> sceneRayQuery;
         return sceneRayQuery.traceVisibilityRay(ray, RAY_FLAG_NONE, 0xff) ? 1.f : 0.f;
     }
@@ -212,10 +213,7 @@ struct EvalContext
         \param[in] loadedLightSample Loaded light sample.
         \return Returns the visibility, 1.f if visible, 0.f if occluded.
     */
-    float evalVisibility(const LoadedLightSample loadedLightSample)
-    {
-        return evalVisibility(loadedLightSample.eval(pos));
-    }
+    float evalVisibility(const LoadedLightSample loadedLightSample) { return evalVisibility(loadedLightSample.eval(pos)); }
 
     /** Trace a ray and report the hit point.
         \param[in] ray Ray description.
@@ -226,6 +224,9 @@ struct EvalContext
     {
         SceneRayQuery<kUseAlphaTest> sceneRayQuery;
         float hitT;
-        return sceneRayQuery.traceRay(ray, hit, hitT, RAY_FLAG_NONE, 0xff);
+        // return sceneRayQuery.traceRay(ray, hit, hitT, RAY_FLAG_NONE, 0xff);
+        // return sceneRayQuery.traceRay(Ray(ray.Origin, ray.Direction, ray.TMin, ray.TMax), hit, hitT, RAY_FLAG_NONE, 0xff);
+        hit = sceneRayQuery.traceRay(Ray(ray.Origin, ray.Direction, ray.TMin, ray.TMax), hitT, RAY_FLAG_NONE, 0xff);
+        return hitT > 0.0f;
     }
 };
