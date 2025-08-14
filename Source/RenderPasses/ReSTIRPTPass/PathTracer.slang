@@ -1,7 +1,7 @@
 /***************************************************************************
  # Copyright (c) 2022, Daqi Lin.  All rights reserved.
  **************************************************************************/
-#include "Scene/Material/MaterialDefines.slangh"
+// #include "Scene/Material/MaterialDefines.slangh"
 
 import Scene.RaytracingInline;
 import Rendering.Lights.EnvMapSampler;
@@ -28,6 +28,28 @@ import Utils.Debug.PixelDebug;
 import LoadShadingData;
 import PathBuilder;
 import PathReservoir;
+
+// import Rendering.Lights.EnvMapSampler;
+// import Rendering.Lights.EmissiveLightSampler;
+// import Rendering.Lights.EmissiveLightSamplerHelpers;
+// import Rendering.Lights.LightHelpers;
+// import Rendering.Materials.IsotropicGGX;
+// import Rendering.Materials.InteriorListHelpers;
+// import Rendering.Volumes.HomogeneousVolumeSampler;
+// import Rendering.Utils.PixelStats;
+// import RenderPasses.Shared.Denoising.NRDConstants;
+// import RenderPasses.Shared.Denoising.NRDBuffers;
+// import RenderPasses.Shared.Denoising.NRDData;
+// import RenderPasses.Shared.Denoising.NRDHelpers;
+// import Utils.Color.ColorHelpers;
+// import Utils.Geometry.GeometryHelpers;
+// import Utils.Debug.PixelDebug;
+// // import LoadShadingData;
+// // import ColorType;
+// // import NRDHelpers;
+// __exported import PathState;
+// __exported import Params;
+// import Rendering.RTXDI.RTXDI;
 
 #include "Utils/Math/MathConstants.slangh"
 
@@ -399,9 +421,15 @@ struct PathTracer
                 path.origin = sd.computeNewRayOrigin(false);
 
                 // Update interior list and inside volume flag.
-                if (!sd.isThinSurface())
+                // if (!sd.isThinSurface())
+                // {
+                //     uint nestedPriority = gScene.materials.getMaterial(sd.materialID).getNestedPriority();
+                //     path.interiorList.handleIntersection(sd.materialID, nestedPriority, sd.frontFacing);
+                //     path.setInsideDielectricVolume(!path.interiorList.isEmpty());
+                // }
+                if (!sd.mtl.isThinSurface())
                 {
-                    uint nestedPriority = gScene.materials[sd.materialID].getNestedPriority();
+                    uint nestedPriority = sd.mtl.getNestedPriority();
                     path.interiorList.handleIntersection(sd.materialID, nestedPriority, sd.frontFacing);
                     path.setInsideDielectricVolume(!path.interiorList.isEmpty());
                 }
@@ -507,9 +535,15 @@ struct PathTracer
                 path.setTransmission();
 
                 // Update interior list and inside volume flag.
-                if (!sd.isThinSurface())
+                // if (!sd.isThinSurface())
+                // {
+                //     uint nestedPriority = gScene.materials.getMaterial(sd.materialID).getNestedPriority();
+                //     path.interiorList.handleIntersection(sd.materialID, nestedPriority, sd.frontFacing);
+                //     path.setInsideDielectricVolume(!path.interiorList.isEmpty());
+                // }
+                if (!sd.mtl.isThinSurface())
                 {
-                    uint nestedPriority = gScene.materials[sd.materialID].getNestedPriority();
+                    uint nestedPriority = sd.mtl.getNestedPriority();
                     path.interiorList.handleIntersection(sd.materialID, nestedPriority, sd.frontFacing);
                     path.setInsideDielectricVolume(!path.interiorList.isEmpty());
                 }
@@ -808,7 +842,7 @@ struct PathTracer
         if (kUseEmissiveLights && lightType == (uint)LightSampleType::Emissive)
         {
             if (!kUseEmissiveLights) valid = false;
-            else emissiveSampler.skipRandomNumber(sg);
+            // else emissiveSampler.skipRandomNumber(sg);
         }
         if (kUseAnalyticLights && lightType == (uint)LightSampleType::Analytic)
         {
@@ -828,7 +862,10 @@ struct PathTracer
         HitInfo hit;
         float hitT;
         SceneRayQuery<kUseAlphaTest> sceneRayQuery;
-        if (sceneRayQuery.traceRay(ray, hit, hitT, RAY_FLAG_NONE, 0xff))
+        // if (sceneRayQuery.traceRay(ray, hit, hitT, RAY_FLAG_NONE, 0xff))
+        // hit = sceneRayQuery.traceRay(ray, hitT, RAY_FLAG_NONE, 0xff);
+        hit = sceneRayQuery.traceRay(Ray(ray.Origin, ray.Direction, ray.TMin, ray.TMax), hitT, RAY_FLAG_NONE, 0xff);
+        if (hitT > 0.0f)
         {
             // Store hit info.
             path.setHit(hit);
@@ -849,9 +886,12 @@ struct PathTracer
     bool traceVisibilityRay(const Ray ray)
     {
         // TODO rename to PixelStatsRayType::Visibility
-        logTraceRay(PixelStatsRayType::Shadow);
+        logTraceRay(PixelStatsRayType::Visibility);
         SceneRayQuery<kUseAlphaTest> sceneRayQuery;
-        return sceneRayQuery.traceVisibilityRay(ray.toRayDesc(), RAY_FLAG_NONE, 0xff);
+        // return sceneRayQuery.traceVisibilityRay(ray.toRayDesc(), RAY_FLAG_NONE, 0xff);
+        // return sceneRayQuery.traceVisibilityRay(Ray(ray.Origin, ray.Direction, ray.TMin, ray.TMax), RAY_FLAG_NONE, 0xff);
+        return sceneRayQuery.traceVisibilityRay(ray);
+
     }
 
     /** Handle scattering in homogeneous volumes.
@@ -861,14 +901,18 @@ struct PathTracer
     {
         if (!path.interiorList.isEmpty())
         {
-            HomogeneousVolumeSampler hvs = HomogeneousVolumeSampler::create(path.interiorList.getTopMaterialID());
-            const float surfaceDistance = length(path.origin - sd.posW);
+            // HomogeneousVolumeSampler hvs = HomogeneousVolumeSampler::create(path.interiorList.getTopMaterialID());
+            // const float surfaceDistance = length(path.origin - sd.posW);
 
-            // our implementation doesn't support volume scattering
-            {
-                // Handle volume extinction.
-                updatePathThroughput(path, exp(-hvs.sigmaT * surfaceDistance));
-            }
+            // // our implementation doesn't support volume scattering
+            // {
+            //     // Handle volume extinction.
+            //     updatePathThroughput(path, exp(-hvs.sigmaT * surfaceDistance));
+            // }
+            const uint materialID = path.interiorList.getTopMaterialID();
+            let material = gScene.materials.getMaterial(materialID);
+            let vp = material.getHomogeneousVolumeProperties(gScene.materials, materialID);
+            updatePathThroughput(path, HomogeneousVolumeSampler::evalTransmittance(vp, length(sd.posW - path.origin)));
         }
 
         return false;
@@ -884,7 +928,8 @@ struct PathTracer
         sd.eta = computeRelativeIoR(path.interiorList, sd.materialID, sd.frontFacing);
 
         // Check for false intersections.
-        uint nestedPriority = gScene.materials[sd.materialID].getNestedPriority();
+        // uint nestedPriority = gScene.materials.getMaterial(sd.materialID).getNestedPriority();
+        uint nestedPriority = sd.mtl.getNestedPriority();
         if (!path.interiorList.isTrueIntersection(nestedPriority))
         {
             if (path.rejectedHits < kMaxRejectedHits)

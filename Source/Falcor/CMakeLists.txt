@@ -219,6 +219,7 @@ target_sources(Falcor PRIVATE
 
     Rendering/Materials/AnisotropicGGX.slang
     Rendering/Materials/BCSDFConfig.slangh
+    Rendering/Materials/BxDF.slang
     Rendering/Materials/BSDFIntegrator.cpp
     Rendering/Materials/BSDFIntegrator.cs.slang
     Rendering/Materials/BSDFIntegrator.h
@@ -232,6 +233,7 @@ target_sources(Falcor PRIVATE
     Rendering/Materials/HairMaterial.slang
     Rendering/Materials/IMaterialInstance.slang
     Rendering/Materials/IBSDF.slang
+    Rendering/Materials/IBxDF.slang
     Rendering/Materials/IMaterial.slang
     Rendering/Materials/INDF.slang
     Rendering/Materials/InteriorList.slang
@@ -239,7 +241,9 @@ target_sources(Falcor PRIVATE
     Rendering/Materials/IsotropicGGX.slang
     Rendering/Materials/LayeredBSDF.slang
     Rendering/Materials/LobeType.slang
+    Rendering/Materials/MaterialHelpers.slang
     Rendering/Materials/MaterialInstanceHints.slang
+    Rendering/Materials/MaterialShading.slang	
     Rendering/Materials/MERLCommon.slang
     Rendering/Materials/MERLMaterialInstance.slang
     Rendering/Materials/MERLMaterial.slang

@@ -7,7 +7,7 @@
 BEGIN_NAMESPACE_FALCOR
 
 /** Enumeration of the atomic counters used.
-*/
+ */
 enum class Counters
 {
     // TODO: Better naming
@@ -33,63 +33,87 @@ enum class Counters
 };
 
 /** Per-sample color format.
-*/
-enum class ColorFormat
-    // TODO: Remove the ifdefs and the include when Slang supports enum type specifiers.
-#ifdef HOST_CODE
-    : uint32_t
-#endif
+ */
+enum class ColorFormat : uint32_t
 {
     RGBA32F = 0,
     LogLuvHDR = 1,
 };
 
-enum class MISHeuristic
-    // TODO: Remove the ifdefs and the include when Slang supports enum type specifiers.
-#ifdef HOST_CODE
-    : uint32_t
-#endif
+FALCOR_ENUM_INFO(
+    ColorFormat,
+    {
+        {ColorFormat::RGBA32F, "RGBA32F"},
+        {ColorFormat::LogLuvHDR, "LogLuvHDR"},
+    }
+);
+FALCOR_ENUM_REGISTER(ColorFormat);
+
+enum class MISHeuristic : uint32_t
 {
-    Balance = 0,    ///< Balance heuristic.
-    PowerTwo = 1,    ///< Power heuristic (exponent = 2.0).
-    PowerExp = 2,    ///< Power heuristic (variable exponent).
+    Balance = 0,  ///< Balance heuristic.
+    PowerTwo = 1, ///< Power heuristic (exponent = 2.0).
+    PowerExp = 2, ///< Power heuristic (variable exponent).
 };
+
+FALCOR_ENUM_INFO(
+    MISHeuristic,
+    {
+        {MISHeuristic::Balance, "Balance"},
+        {MISHeuristic::PowerTwo, "PowerTwo"},
+        {MISHeuristic::PowerExp, "PowerExp"},
+    }
+);
+FALCOR_ENUM_REGISTER(MISHeuristic);
 
 // Define tile sizes in pixels.
 // The frame is divided into tiles stored in scanline order, with pixels in tiles enumerated in Morton order.
-static const uint2 kScreenTileDim = { 16, 16 };     ///< Screen-tile dimension in pixels.
-static const uint2 kScreenTileBits = { 4, 4 };      ///< Bits needed to describe pixel position within a screen-tile.
+static const uint2 kScreenTileDim = {16, 16}; ///< Screen-tile dimension in pixels.
+static const uint2 kScreenTileBits = {4, 4};  ///< Bits needed to describe pixel position within a screen-tile.
 
 // Define path configuration limits.
-static const uint kMaxSamplesPerPixel = 64;         ///< Maximum supported sample count. We can use tiling to support large sample counts if needed.
-static const uint kMaxFrameDimension = 4096;        ///< Maximum supported frame dimension in pixels along x or y. We can increase the bit allocation if needed.
-static const uint kMaxBounces = 14;                ///< Maximum supported number of bounces per bounce category (value 255 is reserved for internal use). The resulting path length may be longer than this.
-static const uint kMaxLightSamplesPerVertex = 8;    ///< Maximum number of shadow rays per path vertex for next-event estimation.
+static const uint kMaxSamplesPerPixel = 64; ///< Maximum supported sample count. We can use tiling to support large sample counts if needed.
+static const uint kMaxFrameDimension = 4096; ///< Maximum supported frame dimension in pixels along x or y. We can increase the bit
+                                             ///< allocation if needed.
+static const uint kMaxBounces = 14; ///< Maximum supported number of bounces per bounce category (value 255 is reserved for internal use).
+                                    ///< The resulting path length may be longer than this.
+static const uint kMaxLightSamplesPerVertex = 8; ///< Maximum number of shadow rays per path vertex for next-event estimation.
 
-enum class ShiftMapping
-#ifdef HOST_CODE
-    : uint32_t
-#endif
+enum class ShiftMapping : uint32_t
 {
     Reconnection = 0,
     RandomReplay = 1,
     Hybrid = 2,
 };
 
-enum class LocalStrategy
-#ifdef HOST_CODE
-    : uint32_t
-#endif
+FALCOR_ENUM_INFO(
+    ShiftMapping,
+    {
+        {ShiftMapping::Reconnection, "Reconnection"},
+        {ShiftMapping::RandomReplay, "RandomReplay"},
+        {ShiftMapping::Hybrid, "Hybrid"},
+    }
+);
+FALCOR_ENUM_REGISTER(ShiftMapping);
+
+enum class LocalStrategy : uint32_t
 {
     None = 0x0,
     RoughnessCondition = 0x1,
     DistanceCondition = 0x2,
 };
 
-enum class ReSTIRMISKind
-#ifdef HOST_CODE
-    : uint32_t
-#endif
+FALCOR_ENUM_INFO(
+    LocalStrategy,
+    {
+        {LocalStrategy::None, "None"},
+        {LocalStrategy::RoughnessCondition, "RoughnessCondition"},
+        {LocalStrategy::DistanceCondition, "DistanceCondition"},
+    }
+);
+FALCOR_ENUM_REGISTER(LocalStrategy);
+
+enum class ReSTIRMISKind : uint32_t
 {
     Constant = 0,
     Talbot = 1,
@@ -98,14 +122,32 @@ enum class ReSTIRMISKind
     ConstantBiased = 4
 };
 
-enum class SpatialReusePattern
-#ifdef HOST_CODE
-    : uint32_t
-#endif
+FALCOR_ENUM_INFO(
+    ReSTIRMISKind,
+    {
+        {ReSTIRMISKind::Constant, "Constant"},
+        {ReSTIRMISKind::Talbot, "Talbot"},
+        {ReSTIRMISKind::Pairwise, "Pairwise"},
+        {ReSTIRMISKind::ConstantBinary, "ConstantBinary"},
+        {ReSTIRMISKind::ConstantBiased, "ConstantBiased"},
+    }
+);
+FALCOR_ENUM_REGISTER(ReSTIRMISKind);
+
+enum class SpatialReusePattern : uint32_t
 {
     Default = 0, // same as in ScreenSpaceReSTIR
     SmallWindow = 1,
 };
+
+FALCOR_ENUM_INFO(
+    SpatialReusePattern,
+    {
+        {SpatialReusePattern::Default, "Default"},
+        {SpatialReusePattern::SmallWindow, "SmallWindow"},
+    }
+);
+FALCOR_ENUM_REGISTER(SpatialReusePattern);
 
 enum class PathSamplingMode
 {
@@ -114,13 +156,22 @@ enum class PathSamplingMode
     PathTracing
 };
 
+FALCOR_ENUM_INFO(
+    PathSamplingMode,
+    {
+        {PathSamplingMode::ReSTIR, "ReSTIR"},
+        {PathSamplingMode::PathReuse, "PathReuse"},
+        {PathSamplingMode::PathTracing, "PathTracing"},
+    }
+);
+FALCOR_ENUM_REGISTER(PathSamplingMode);
+
 enum class PathReusePattern
 {
     Block,
     NRooks,
     NRooksShift
 };
-
 
 // Import static specialization constants.
 #ifndef HOST_CODE
@@ -129,28 +180,29 @@ __exported import Utils.Math.BitTricks;
 #endif
 
 /** Path tracer parmeters shared between host/device code.
-*/
+ */
 struct RestirPathTracerParams
 {
-    int     useFixedSeed = false;       ///< Use fixed random seed. This is useful for debugging.
-    uint    seed = 0;                   ///< Random seed. This will get updated from the host depending on settings.
-    uint    fixedSeed = 1;              ///< The seed to use when 'useFixedSeed' is enabled.
-    float   lodBias = 0.f;              ///< LOD bias applied to secondary hits.
+    int useFixedSeed = false; ///< Use fixed random seed. This is useful for debugging.
+    uint seed = 0;            ///< Random seed. This will get updated from the host depending on settings.
+    uint fixedSeed = 1;       ///< The seed to use when 'useFixedSeed' is enabled.
+    float lodBias = 0.f;      ///< LOD bias applied to secondary hits.
 
     // Runtime values
-    uint2   frameDim = { 0, 0 };        ///< Frame dimension in pixels.
-    uint2   screenTiles = { 0, 0 };     ///< Number of screen-tiles. Screen tiles may extend outside the frame.
+    uint2 frameDim = {0, 0};    ///< Frame dimension in pixels.
+    uint2 screenTiles = {0, 0}; ///< Number of screen-tiles. Screen tiles may extend outside the frame.
 
-    uint    frameCount = 0;             ///< Frames rendered. This is used as random seed.
-    uint    localStrategyType = (uint)LocalStrategy::RoughnessCondition | (uint)LocalStrategy::DistanceCondition;
-    int     rejectShiftBasedOnJacobian = false; // can be helpful for dynamic geometry
-    float   jacobianRejectionThreshold = 10.f;
+    uint frameCount = 0; ///< Frames rendered. This is used as random seed.
+    uint localStrategyType = (uint)LocalStrategy::RoughnessCondition | (uint)LocalStrategy::DistanceCondition;
+    int rejectShiftBasedOnJacobian = false; // can be helpful for dynamic geometry
+    float jacobianRejectionThreshold = 10.f;
 
     // params for roughness condition in mixed strategy
-    float   specularRoughnessThreshold = 0.2f; ///< Specular reflection events are only classified as specular if the material's roughness value is equal or smaller than this threshold. Otherwise they are classified diffuse.
+    float specularRoughnessThreshold = 0.2f; ///< Specular reflection events are only classified as specular if the material's roughness
+                                             ///< value is equal or smaller than this threshold. Otherwise they are classified diffuse.
     // params for distance condition in mixed strategy
-    float   nearFieldDistance = 0.1f; //TODO: make this adaptive to spatial reuse size / scene size
-    uint2 dummy; // padding
+    float nearFieldDistance = 0.1f; // TODO: make this adaptive to spatial reuse size / scene size
+    uint2 dummy;                    // padding
 
 #ifndef HOST_CODE
 

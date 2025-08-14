@@ -28,6 +28,7 @@
 import Rendering.Materials.Microfacet;
 import RenderPasses.Shared.Denoising.NRDBuffers;
 import Scene.ShadingData;
+import Rendering.Materials.IsotropicGGX;
 import PathState;
 
 void setNRDPrimaryHitEmission(NRDBuffers outputNRD, const bool useNRDDemodulation, const PathState path, const uint2 pixel, const bool isPrimaryHit, const float3 emission)

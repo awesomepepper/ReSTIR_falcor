@@ -344,3 +344,6 @@ private:
     SampleApp& operator=(const SampleApp&) = delete;
 };
 }; // namespace Falcor
+
+/// Get the global SampleApp instance.
+FALCOR_API Falcor::SampleApp& getApp();

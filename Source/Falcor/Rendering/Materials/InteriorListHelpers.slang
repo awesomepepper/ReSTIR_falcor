@@ -52,3 +52,30 @@ float computeOutsideIoR(const InteriorList interiorList, const uint materialID, 
 
     return gScene.materials.evalIoR(outsideMaterialID);
 }
+
+/** Compute relative index of refraction at intersection using interior list.
+    \param[in] interiorList Interior list.
+    \param[in] materialID Material ID of intersected material.
+    \param[in] entering True if material is entered, false if material is left.
+    \return Returns the relative index of refraction.
+*/
+float computeRelativeIoR(InteriorList interiorList, uint materialID, bool entering)
+{
+    if (entering)
+    {
+        float toIoR = gScene.materials.evalIoR(materialID);
+        float fromIoR = 1.f;
+        uint topMaterialID = interiorList.getTopMaterialID();
+        if (topMaterialID != InteriorList::kNoMaterial) fromIoR = gScene.materials.evalIoR(topMaterialID);
+        return fromIoR / toIoR;
+    }
+    else
+    {
+        float fromIoR = gScene.materials.evalIoR(materialID);
+        float toIoR = 1.f;
+        uint topMaterialID = interiorList.getTopMaterialID();
+        if (topMaterialID == materialID) topMaterialID = interiorList.getNextMaterialID();
+        if (topMaterialID != InteriorList::kNoMaterial) toIoR = gScene.materials.evalIoR(topMaterialID);
+        return fromIoR / toIoR;
+    }
+}

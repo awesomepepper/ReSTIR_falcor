@@ -1,7 +1,7 @@
 /***************************************************************************
  # Copyright (c) 2022, Daqi Lin.  All rights reserved.
  **************************************************************************/
-#include "Scene/Material/MaterialDefines.slangh"
+// #include "Scene/Material/MaterialDefines.slangh"
 
 import Rendering.Materials.MaterialShading;
 import LoadShadingData;

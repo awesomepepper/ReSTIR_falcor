@@ -25,7 +25,8 @@
  # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  **************************************************************************/
-#include "Scene/ScenePrimitiveDefines.slangh"
+// #include "Scene/ScenePrimitiveDefines.slangh"
+#include "Utils/HostDeviceShared.slangh"
 import Scene.Scene;
 __exported import Scene.HitInfo;
 __exported import Scene.Shading;
@@ -33,6 +34,22 @@ import Utils.Math.MathHelpers;
 import Rendering.Materials.TexLODHelpers;
 import Params;
 import Utils.Debug.PixelDebug;
+
+BEGIN_NAMESPACE_FALCOR
+
+// These define constants should match the enums defined in SceneTypes.slang.
+#define PRIMITIVE_TYPE_TRIANGLE_MESH            0x1
+#define PRIMITIVE_TYPE_DISPLACED_TRIANGLE_MESH  0x2
+#define PRIMITIVE_TYPE_CURVE                    0x4
+#define PRIMITIVE_TYPE_SDF_GRID                 0x8
+#define PRIMITIVE_TYPE_CUSTOM                   0x10
+
+#define PRIMITIVE_TYPE_PROCEDURAL               (PRIMITIVE_TYPE_DISPLACED_TRIANGLE_MESH | PRIMITIVE_TYPE_CURVE | PRIMITIVE_TYPE_SDF_GRID | PRIMITIVE_TYPE_CUSTOM)
+#define PRIMITIVE_TYPE_ALL                      0x1f
+
+#define IS_SET(flags, type) ((flags) & (type))
+
+END_NAMESPACE_FALCOR
 
 /** Compute derivatives at primarty triangle hit.
 */
@@ -115,9 +132,11 @@ void adjustShadingData(inout ShadingData sd, const HitInfo hit, const float curv
 #endif
 
 #if GBUFFER_ADJUST_SHADING_NORMALS
-    if (kAdjustShadingNormals || isPrimary) adjustShadingNormal(sd, v);
+    // if (kAdjustShadingNormals || isPrimary) adjustShadingNormal(sd, v);
+    if (kAdjustShadingNormals || isPrimary) adjustShadingNormal(sd, sd.frame);
 #else
-    if (kAdjustShadingNormals && !isPrimary) adjustShadingNormal(sd, v);
+    // if (kAdjustShadingNormals && !isPrimary) adjustShadingNormal(sd, v);
+    if (kAdjustShadingNormals || isPrimary) adjustShadingNormal(sd, sd.frame);
 #endif
 }
 
@@ -133,7 +152,8 @@ ShadingData loadShadingData(const HitInfo hit, const float3 viewDir, const bool 
     float curveSphereRadius = {};
     uint materialID = {};
     VertexData v = loadVertexData(hit, viewDir, materialID, curveSphereRadius);
-    ShadingData sd = prepareShadingData(v, materialID, gScene.materials[materialID], gScene.materialResources[materialID], viewDir, lod);
+    // ShadingData sd = prepareShadingData(v, materialID, gScene.materials[materialID], gScene.materialResources[materialID], viewDir, lod);
+    ShadingData sd = gScene.materials.prepareShadingData(v, materialID, viewDir);
     adjustShadingData(sd, hit, curveSphereRadius, v, isPrimary);
     return sd;
 }
@@ -145,7 +165,8 @@ ShadingData loadShadingDataWithPrevVertexPosition(const HitInfo hit, const float
     uint materialID = {};
     VertexData v = loadVertexData(hit, float3(0.f), materialID, curveSphereRadius);
     float3 viewDir = normalize(prevVertexPosition - v.posW);
-    ShadingData sd = prepareShadingData(v, materialID, gScene.materials[materialID], gScene.materialResources[materialID], viewDir, lod);
+    // ShadingData sd = prepareShadingData(v, materialID, gScene.materials[materialID], gScene.materialResources[materialID], viewDir, lod);
+    ShadingData sd = gScene.materials.prepareShadingData(v, materialID, viewDir);
     adjustShadingData(sd, hit, curveSphereRadius, v, isPrimary);
     return sd;
 }
@@ -163,7 +184,8 @@ ShadingData loadShadingDataFootprint(const HitInfo hit, const float3 viewDir, co
     float curveSphereRadius = {};
     uint materialID = {};
     VertexData v = loadVertexData(hit, viewDir, materialID, curveSphereRadius);
-    ShadingData sd = prepareShadingData(v, materialID, gScene.materials[materialID], gScene.materialResources[materialID], viewDir, ddx, ddy);
+    // ShadingData sd = prepareShadingData(v, materialID, gScene.materials[materialID], gScene.materialResources[materialID], viewDir, ddx, ddy);
+    ShadingData sd = gScene.materials.prepareShadingData(v, materialID, viewDir);
     adjustShadingData(sd, hit, curveSphereRadius, v, isPrimary);
     return sd;
 }

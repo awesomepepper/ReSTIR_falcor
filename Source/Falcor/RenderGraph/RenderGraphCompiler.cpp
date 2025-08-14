@@ -311,6 +311,11 @@ void RenderGraphCompiler::allocateResources(ref<Device> pDevice, ResourceCache* 
                 uint32_t lifetime = graphOutput ? uint32_t(-1) : uint32_t(i);
                 if (graphOutput && field.getBindFlags() != ResourceBindFlags::None)
                     field.bindFlags(field.getBindFlags() | ResourceBindFlags::ShaderResource); // Adding ShaderResource for graph outputs
+                // if (mExecutionList[i].name == "ReSTIRPTPass" && field.getName() == "color")
+                //{
+                //    // 将格式改为 RGBA32Float
+                //    field.format(ResourceFormat::RGBA32Float);
+                //}
                 pResourceCache->registerField(fullFieldName, field, lifetime);
             }
         }

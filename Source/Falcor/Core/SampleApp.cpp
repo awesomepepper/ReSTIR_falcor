@@ -49,8 +49,14 @@
 
 namespace Falcor
 {
+// Global SampleApp instance
+static std::unique_ptr<SampleApp> gpApp;
+
 SampleApp::SampleApp(const SampleAppConfig& config)
 {
+    FALCOR_ASSERT(!gpApp);                    // Ensure only one instance is created
+    gpApp = std::unique_ptr<SampleApp>(this); // Store 'this' pointer as the global instance
+
     logInfo("Falcor {}", getLongVersionString());
 
     OSServices::start();
@@ -647,3 +653,9 @@ void SampleApp::registerScriptBindings(pybind11::module& m)
     m.def("resizeFrameBuffer", resize, "width"_a, "height"_a);
 }
 } // namespace Falcor
+
+Falcor::SampleApp& getApp()
+{
+    FALCOR_ASSERT(Falcor::gpApp); // Ensure the app has been initialized
+    return *Falcor::gpApp;
+}

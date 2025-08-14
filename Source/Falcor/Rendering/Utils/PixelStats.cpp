@@ -156,10 +156,11 @@ namespace Falcor
         }
     }
 
-    void PixelStats::renderUI(Gui::Widgets& widget)
+    bool PixelStats::renderUI(Gui::Widgets& widget)
     {
+        bool dirty = false;
         // Configuration.
-        widget.checkbox("Ray stats", mEnabled);
+        dirty |= widget.checkbox("Ray stats", mEnabled);
         widget.tooltip("Collects ray tracing traversal stats on the GPU.\nNote that this option slows down the performance.");
 
         // Fetch data and show stats if available.
@@ -194,6 +195,7 @@ namespace Falcor
 
             if (mEnableLogging) logInfo("\n" + oss.str());
         }
+        return dirty;
     }
 
     bool PixelStats::getStats(PixelStats::Stats& stats)

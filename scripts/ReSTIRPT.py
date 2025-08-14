@@ -25,23 +25,24 @@ def render_graph_ScreenSpaceReSTIR():
     g.addPass(ToneMapper, "ToneMapper")
     ScreenSpaceReSTIRPass = createPass("ScreenSpaceReSTIRPass")    
     g.addPass(ScreenSpaceReSTIRPass, "ScreenSpaceReSTIRPass")    
-    ReSTIRPTPass = createPass("ReSTIRPTPass")    
+    ReSTIRPTPass = createPass("ReSTIRPTPass", {'samplesPerPixel': 1})    
     g.addPass(ReSTIRPTPass, "ReSTIRPTPass")
     
-    # g.addEdge("VBufferRT.vbuffer", "ReSTIRPTPass.vbuffer")   
-    # g.addEdge("VBufferRT.mvec", "ReSTIRPTPass.motionVectors")    
+    g.addEdge("VBufferRT.vbuffer", "ReSTIRPTPass.vbuffer")   
+    g.addEdge("VBufferRT.mvec", "ReSTIRPTPass.motionVectors")    
     
     g.addEdge("VBufferRT.vbuffer", "ScreenSpaceReSTIRPass.vbuffer")   
     g.addEdge("VBufferRT.mvec", "ScreenSpaceReSTIRPass.motionVectors")    
-    # g.addEdge("ScreenSpaceReSTIRPass.color", "ReSTIRPTPass.directLighting")    
+    g.addEdge("ScreenSpaceReSTIRPass.color", "ReSTIRPTPass.directLighting")    
     
-    # g.addEdge("ReSTIRPTPass.color", "AccumulatePass.input")
-    g.addEdge("ScreenSpaceReSTIRPass.color", "AccumulatePass.input")
+    g.addEdge("ReSTIRPTPass.color", "AccumulatePass.input")
+    # g.addEdge("ScreenSpaceReSTIRPass.color", "AccumulatePass.input")
     g.addEdge("AccumulatePass.output", "ToneMapper.src")
     
     g.markOutput("ToneMapper.dst")
     g.markOutput("AccumulatePass.output")  
     g.markOutput("ScreenSpaceReSTIRPass.color")  
+    g.markOutput("ReSTIRPTPass.color")  
 
     return g
 

@@ -58,23 +58,28 @@ public:
     // virtual std::string getDesc() override;
     // 由getProperties函数替代
     // virtual Dictionary getScriptingDictionary() override;
-    Dictionary getSpecializedScriptingDictionary();
+    // 这函数好像没用
+    // Dictionary getSpecializedScriptingDictionary();
 
     virtual Properties getProperties() const override;
     virtual void setProperties(const Properties& props) override;
     virtual RenderPassReflection reflect(const CompileData& compileData) override;
-    virtual void compile(RenderContext* pRenderContext, const CompileData& compileData) override {}
+    virtual void compile(RenderContext* pRenderContext, const CompileData& compileData) override;
     virtual void execute(RenderContext* pRenderContext, const RenderData& renderData) override;
     virtual void renderUI(Gui::Widgets& widget) override;
     virtual void setScene(RenderContext* pRenderContext, const ref<Scene>& pScene) override;
-    virtual bool onMouseEvent(const MouseEvent& mouseEvent) override { return false; }
+    virtual bool onMouseEvent(const MouseEvent& mouseEvent) override;
     virtual bool onKeyEvent(const KeyboardEvent& keyEvent) override { return false; }
 
-    const ref<PixelStats>& getPixelStats() const { return mpPixelStats; }
+    PixelStats& getPixelStats() { return *mpPixelStats; }
+    // const std::unique_ptr<PixelStats>& getPixelStats() const { return mpPixelStats; }
 
-    // 原ReSTIR的这俩功能该怎么实现？
+    void updateProperties(const Properties& props);
     // void updateDict(const Dictionary& dict) override;
+
+    // 原ReSTIR的initDict
     // void initDict() override;
+
     void reset();
 
     static void registerBindings(pybind11::module& m);
@@ -103,13 +108,13 @@ private:
         const RenderData& renderData,
         const ref<ComputePass>& pass,
         const std::string& passName,
-        int sampleId
+        int sampleID
     );
     void PathReusePass(
         RenderContext* pRenderContext,
         uint32_t restir_i,
         const RenderData& renderData,
-        bool temporalReuse = false,
+        bool isTemporalReuse = false,
         int spatialRoundId = 0,
         bool isLastRound = false
     );
@@ -197,10 +202,10 @@ private:
     // ParameterBlock::SharedPtr mpPathTracerBlock;       ///< Parameter block for the path tracer.
     ref<Scene> mpScene;                          ///< The current scene, or nullptr if no scene loaded.
     ref<SampleGenerator> mpSampleGenerator;      ///< GPU pseudo-random sample generator.
-    ref<EnvMapSampler> mpEnvMapSampler;          ///< Environment map sampler or nullptr if not used.
-    ref<EmissiveLightSampler> mpEmissiveSampler; ///< Emissive light sampler or nullptr if not used.
-    ref<PixelStats> mpPixelStats;                ///< Utility class for collecting pixel stats.
-    ref<PixelDebug> mpPixelDebug;                ///< Utility class for pixel debugging (print in shaders).
+    std::unique_ptr<EnvMapSampler> mpEnvMapSampler; ///< Environment map sampler or nullptr if not used.
+    std::unique_ptr<EmissiveLightSampler> mpEmissiveSampler; ///< Emissive light sampler or nullptr if not used.
+    std::unique_ptr<PixelStats> mpPixelStats;    ///< Utility class for collecting pixel stats.
+    std::unique_ptr<PixelDebug> mpPixelDebug;    ///< Utility class for pixel debugging (print in shaders).
     ref<ParameterBlock> mpPathTracerBlock;       ///< Parameter block for the path tracer.
 
     // internal below
