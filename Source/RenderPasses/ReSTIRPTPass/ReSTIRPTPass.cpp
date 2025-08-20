@@ -322,79 +322,79 @@ ReSTIRPTPass::ReSTIRPTPass(ref<Device> pDevice, const Properties& props) : Rende
     // Create neighbor offset texture.
     mpNeighborOffsets = createNeighborOffsetTexture(kNeighborOffsetCount);
 
-    // Create programs.
-    if (!mpGeneratePaths)
-    {
-        auto defines = mStaticParams.getDefines(*this);
+    //// Create programs.
+    //if (!mpGeneratePaths)
+    //{
+    //    auto defines = mStaticParams.getDefines(*this);
 
-        // auto shaderModules = mpScene->getShaderModules();
-        // auto typeConformances = mpScene->getTypeConformances();
+    //    // auto shaderModules = mpScene->getShaderModules();
+    //    // auto typeConformances = mpScene->getTypeConformances();
 
-        ProgramDesc desc;
-        // desc.addShaderModules(shaderModules);
-        // desc.addTypeConformances(typeConformances);
-        desc.addShaderLibrary(kGeneratePathsFilename).csEntry("main").setShaderModel(ShaderModel::SM6_5);
-        mpGeneratePaths = ComputePass::create(mpDevice, desc, defines, false);
+    //    ProgramDesc desc;
+    //    // desc.addShaderModules(shaderModules);
+    //    // desc.addTypeConformances(typeConformances);
+    //    desc.addShaderLibrary(kGeneratePathsFilename).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+    //    mpGeneratePaths = ComputePass::create(mpDevice, desc, defines, false);
 
-        // mpGeneratePaths->setVars(nullptr);
-    }
+    //    // mpGeneratePaths->setVars(nullptr);
+    //}
 
-    if (!mpReflectTypes)
-    {
-        auto defines = mStaticParams.getDefines(*this);
+    //if (!mpReflectTypes)
+    //{
+    //    auto defines = mStaticParams.getDefines(*this);
 
-        // auto shaderModules = mpScene->getShaderModules();
-        // auto typeConformances = mpScene->getTypeConformances();
+    //    // auto shaderModules = mpScene->getShaderModules();
+    //    // auto typeConformances = mpScene->getTypeConformances();
 
-        ProgramDesc desc;
-        // desc.addShaderModules(shaderModules);
-        // desc.addTypeConformances(typeConformances);
-        desc.addShaderLibrary(kReflectTypesFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
-        mpReflectTypes = ComputePass::create(mpDevice, desc, defines, false);
+    //    ProgramDesc desc;
+    //    // desc.addShaderModules(shaderModules);
+    //    // desc.addTypeConformances(typeConformances);
+    //    desc.addShaderLibrary(kReflectTypesFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+    //    mpReflectTypes = ComputePass::create(mpDevice, desc, defines, false);
 
-        // mpReflectTypes->setVars(nullptr);
-    }
+    //    // mpReflectTypes->setVars(nullptr);
+    //}
 
     auto defines = mStaticParams.getDefines(*this);
 
     // mpGeneratePaths = ComputePass::create(kGeneratePathsFilename, "main", defines, false);
     // mpReflectTypes = ComputePass::create(kReflectTypesFile, "main", defines, false);
 
-    {
-        ProgramDesc desc;
-        desc.addShaderLibrary(kTracePassFilename).csEntry("main").setShaderModel(ShaderModel::SM6_5);
-        mpTracePass = ComputePass::create(mpDevice, desc, defines, false);
-    }
+    //{
+    //    ProgramDesc desc;
+    //    desc.addShaderLibrary(kTracePassFilename).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+    //    mpTracePass = ComputePass::create(mpDevice, desc, defines, false);
+    //}
 
-    {
-        ProgramDesc desc;
-        desc.addShaderLibrary(kSpatialPathRetraceFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
-        mpSpatialPathRetracePass = ComputePass::create(mpDevice, desc, defines, false);
-    }
+    //{
+    //    ProgramDesc desc;
+    //    desc.addShaderLibrary(kSpatialPathRetraceFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+    //    mpSpatialPathRetracePass = ComputePass::create(mpDevice, desc, defines, false);
+    //}
 
-    {
-        ProgramDesc desc;
-        desc.addShaderLibrary(kTemporalPathRetraceFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
-        mpTemporalPathRetracePass = ComputePass::create(mpDevice, desc, defines, false);
-    }
+    //{
+    //    ProgramDesc desc;
+    //    desc.addShaderLibrary(kTemporalPathRetraceFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+    //    mpTemporalPathRetracePass = ComputePass::create(mpDevice, desc, defines, false);
+    //}
 
-    {
-        ProgramDesc desc;
-        desc.addShaderLibrary(kSpatialReusePassFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
-        mpSpatialReusePass = ComputePass::create(mpDevice, desc, defines, false);
-    }
+    //{
+    //    ProgramDesc desc;
+    //    desc.addShaderLibrary(kSpatialReusePassFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+    //    mpSpatialReusePass = ComputePass::create(mpDevice, desc, defines, false);
+    //}
 
-    {
-        ProgramDesc desc;
-        desc.addShaderLibrary(kTemporalReusePassFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
-        mpTemporalReusePass = ComputePass::create(mpDevice, desc, defines, false);
-    }
+    //{
+    //    ProgramDesc desc;
+    //    desc.addShaderLibrary(kTemporalReusePassFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+    //    mpTemporalReusePass = ComputePass::create(mpDevice, desc, defines, false);
+    //}
 
-    {
-        ProgramDesc desc;
-        desc.addShaderLibrary(kComputePathReuseMISWeightsFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
-        mpComputePathReuseMISWeightsPass = ComputePass::create(mpDevice, desc, defines, false);
-    }
+    //{
+    //    ProgramDesc desc;
+    //    desc.addShaderLibrary(kComputePathReuseMISWeightsFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+    //    mpComputePathReuseMISWeightsPass = ComputePass::create(mpDevice, desc, defines, false);
+    //}
 
     // Allocate resources that don't change in size.
     mpCounters = mpDevice->createBuffer(
@@ -678,16 +678,16 @@ void ReSTIRPTPass::setScene(RenderContext* pRenderContext, const ref<Scene>& pSc
         // Prepare our programs for the scene.
         DefineList defines = mpScene->getSceneDefines();
 
-        mpGeneratePaths->getProgram()->addDefines(defines);
-        mpTracePass->getProgram()->addDefines(defines);
-        mpReflectTypes->getProgram()->addDefines(defines);
+        //mpGeneratePaths->getProgram()->addDefines(defines);
+        //mpTracePass->getProgram()->addDefines(defines);
+        //mpReflectTypes->getProgram()->addDefines(defines);
 
-        mpSpatialPathRetracePass->getProgram()->addDefines(defines);
-        mpTemporalPathRetracePass->getProgram()->addDefines(defines);
+        //mpSpatialPathRetracePass->getProgram()->addDefines(defines);
+        //mpTemporalPathRetracePass->getProgram()->addDefines(defines);
 
-        mpSpatialReusePass->getProgram()->addDefines(defines);
-        mpTemporalReusePass->getProgram()->addDefines(defines);
-        mpComputePathReuseMISWeightsPass->getProgram()->addDefines(defines);
+        //mpSpatialReusePass->getProgram()->addDefines(defines);
+        //mpTemporalReusePass->getProgram()->addDefines(defines);
+        //mpComputePathReuseMISWeightsPass->getProgram()->addDefines(defines);
 
         validateOptions();
 
@@ -1025,6 +1025,135 @@ void ReSTIRPTPass::updatePrograms()
         return;
 
     mStaticParams.rcDataOfflineMode = mSpatialNeighborCount > 3 && mStaticParams.shiftStrategy == ShiftMapping::Hybrid;
+
+        // Create programs.
+    if (!mpGeneratePaths)
+    {
+        auto defines = mStaticParams.getDefines(*this);
+
+        auto shaderModules = mpScene->getShaderModules();
+        auto typeConformances = mpScene->getTypeConformances();
+
+        ProgramDesc desc;
+        desc.addShaderModules(shaderModules);
+        desc.addTypeConformances(typeConformances);
+        desc.addShaderLibrary(kGeneratePathsFilename).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+        mpGeneratePaths = ComputePass::create(mpDevice, desc, defines, false);
+
+        // mpGeneratePaths->setVars(nullptr);
+    }
+
+    if (!mpReflectTypes)
+    {
+        auto defines = mStaticParams.getDefines(*this);
+
+        auto shaderModules = mpScene->getShaderModules();
+        auto typeConformances = mpScene->getTypeConformances();
+
+        ProgramDesc desc;
+        desc.addShaderModules(shaderModules);
+        desc.addTypeConformances(typeConformances);
+        desc.addShaderLibrary(kReflectTypesFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+        mpReflectTypes = ComputePass::create(mpDevice, desc, defines, false);
+
+        // mpReflectTypes->setVars(nullptr);
+    }
+
+    if (!mpTracePass)
+    {
+        auto defines = mStaticParams.getDefines(*this);
+
+        auto shaderModules = mpScene->getShaderModules();
+        auto typeConformances = mpScene->getTypeConformances();
+
+        ProgramDesc desc;
+        desc.addShaderModules(shaderModules);
+        desc.addTypeConformances(typeConformances);
+        desc.addShaderLibrary(kTracePassFilename).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+        mpTracePass = ComputePass::create(mpDevice, desc, defines, false);
+
+        // mpReflectTypes->setVars(nullptr);
+    }
+
+    if (!mpSpatialPathRetracePass)
+    {
+        auto defines = mStaticParams.getDefines(*this);
+
+        auto shaderModules = mpScene->getShaderModules();
+        auto typeConformances = mpScene->getTypeConformances();
+
+        ProgramDesc desc;
+        desc.addShaderModules(shaderModules);
+        desc.addTypeConformances(typeConformances);
+        desc.addShaderLibrary(kSpatialPathRetraceFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+        mpSpatialPathRetracePass = ComputePass::create(mpDevice, desc, defines, false);
+
+        // mpReflectTypes->setVars(nullptr);
+    }
+
+    if (!mpTemporalPathRetracePass)
+    {
+        auto defines = mStaticParams.getDefines(*this);
+
+        auto shaderModules = mpScene->getShaderModules();
+        auto typeConformances = mpScene->getTypeConformances();
+
+        ProgramDesc desc;
+        desc.addShaderModules(shaderModules);
+        desc.addTypeConformances(typeConformances);
+        desc.addShaderLibrary(kTemporalPathRetraceFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+        mpTemporalPathRetracePass = ComputePass::create(mpDevice, desc, defines, false);
+
+        // mpReflectTypes->setVars(nullptr);
+    }
+
+    if (!mpSpatialReusePass)
+    {
+        auto defines = mStaticParams.getDefines(*this);
+
+        auto shaderModules = mpScene->getShaderModules();
+        auto typeConformances = mpScene->getTypeConformances();
+
+        ProgramDesc desc;
+        desc.addShaderModules(shaderModules);
+        desc.addTypeConformances(typeConformances);
+        desc.addShaderLibrary(kSpatialReusePassFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+        mpSpatialReusePass = ComputePass::create(mpDevice, desc, defines, false);
+
+        // mpReflectTypes->setVars(nullptr);
+    }
+
+    if (!mpTemporalReusePass)
+    {
+        auto defines = mStaticParams.getDefines(*this);
+
+        auto shaderModules = mpScene->getShaderModules();
+        auto typeConformances = mpScene->getTypeConformances();
+
+        ProgramDesc desc;
+        desc.addShaderModules(shaderModules);
+        desc.addTypeConformances(typeConformances);
+        desc.addShaderLibrary(kTemporalReusePassFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+        mpTemporalReusePass = ComputePass::create(mpDevice, desc, defines, false);
+
+        // mpReflectTypes->setVars(nullptr);
+    }
+
+    if (!mpComputePathReuseMISWeightsPass)
+    {
+        auto defines = mStaticParams.getDefines(*this);
+
+        auto shaderModules = mpScene->getShaderModules();
+        auto typeConformances = mpScene->getTypeConformances();
+
+        ProgramDesc desc;
+        desc.addShaderModules(shaderModules);
+        desc.addTypeConformances(typeConformances);
+        desc.addShaderLibrary(kComputePathReuseMISWeightsFile).csEntry("main").setShaderModel(ShaderModel::SM6_5);
+        mpComputePathReuseMISWeightsPass = ComputePass::create(mpDevice, desc, defines, false);
+
+        // mpReflectTypes->setVars(nullptr);
+    }
 
     auto defines = mStaticParams.getDefines(*this);
 
@@ -1390,13 +1519,38 @@ void ReSTIRPTPass::setShaderData(const ShaderVar& var, const RenderData& renderD
         var["kUseEnvBackground"] = mpScene->useEnvBackground();
     }
 
+    // if (auto outputDebug = var.findMember("outputDebug"); outputDebug.isValid())
+    // {
+    //     outputDebug = renderData[kOutputDebug]->asTexture(); // Can be nullptr
+    // }
+    // if (auto outputTime = var.findMember("outputTime"); outputTime.isValid())
+    // {
+    //     outputTime = renderData[kOutputTime]->asTexture(); // Can be nullptr
+    // }
+
     if (auto outputDebug = var.findMember("outputDebug"); outputDebug.isValid())
     {
-        outputDebug = renderData[kOutputDebug]->asTexture(); // Can be nullptr
+        ref<Resource> pDebugResource = renderData[kOutputDebug];
+        if (pDebugResource)
+        {
+            outputDebug = pDebugResource->asTexture();
+        }
+        else
+        {
+            outputDebug = ref<Texture>();
+        }
     }
     if (auto outputTime = var.findMember("outputTime"); outputTime.isValid())
     {
-        outputTime = renderData[kOutputTime]->asTexture(); // Can be nullptr
+        ref<Resource> pTimeResource = renderData[kOutputTime];
+        if (pTimeResource)
+        {
+            outputTime = pTimeResource->asTexture();
+        }
+        else
+        {
+            outputTime = ref<Texture>();
+        }
     }
 
     if (isPathTracer && mpEmissiveSampler)
@@ -2202,7 +2356,15 @@ DefineList ReSTIRPTPass::StaticParams::getDefines(const ReSTIRPTPass& owner) con
     defines.add("GBUFFER_ADJUST_SHADING_NORMALS", owner.mGBufferAdjustShadingNormals ? "1" : "0");
 
     // Scene-specific configuration.
-    const auto& scene = owner.mpScene;
+    //const auto& scene = owner.mpScene;
+    if (auto scene = dynamic_ref_cast<Scene>(owner.mpScene))
+        defines.add(scene->getSceneDefines());
+    //defines.add("USE_ENV_LIGHT", scene->useEnvLight() ? "1" : "0");
+    //defines.add("USE_ANALYTIC_LIGHTS", scene->useAnalyticLights() ? "1" : "0");
+    //defines.add("USE_EMISSIVE_LIGHTS", scene->useEmissiveLights() ? "1" : "0");
+    //defines.add("USE_CURVES", (scene->hasGeometryType(Scene::GeometryType::Curve)) ? "1" : "0");
+    //defines.add("USE_SDF_GRIDS", scene->hasGeometryType(Scene::GeometryType::SDFGrid) ? "1" : "0");
+    //defines.add("USE_HAIR_MATERIAL", scene->getMaterialCountByType(MaterialType::Hair) > 0u ? "1" : "0");
 
     // Set default (off) values for additional features.
     defines.add("OUTPUT_GUIDE_DATA", "0");

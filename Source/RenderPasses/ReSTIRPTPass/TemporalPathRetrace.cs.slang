@@ -55,7 +55,8 @@ struct PathRetracePass
         PrimaryHitPacked = vbuffer[pixel];
         if (isValidPackedHitInfo(PrimaryHitPacked))
         {
-            HitInfo PrimaryHit; PrimaryHit.unpack(PrimaryHitPacked);
+            // HitInfo PrimaryHit; PrimaryHit.unpack(PrimaryHitPacked);
+            HitInfo PrimaryHit = HitInfo(PrimaryHitPacked);
             sd = loadShadingData(PrimaryHit, -ray.dir, true);
         }
         return sd;
@@ -68,7 +69,8 @@ struct PathRetracePass
         PrimaryHitPacked = temporalVbuffer[pixel];
         if (isValidPackedHitInfo(PrimaryHitPacked))
         {
-            HitInfo PrimaryHit; PrimaryHit.unpack(PrimaryHitPacked);
+            // HitInfo PrimaryHit; PrimaryHit.unpack(PrimaryHitPacked);
+            HitInfo PrimaryHit = HitInfo(PrimaryHitPacked);
             sd = loadShadingData(PrimaryHit, -ray.dir, true);
         }
         return sd;

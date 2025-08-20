@@ -84,7 +84,8 @@ struct PathReusePass
         PrimaryHitPacked = vbuffer[pixel];
         if (isValidPackedHitInfo(PrimaryHitPacked))
         {
-            HitInfo PrimaryHit; PrimaryHit.unpack(PrimaryHitPacked);
+            // HitInfo PrimaryHit; PrimaryHit.unpack(PrimaryHitPacked);
+            HitInfo PrimaryHit = HitInfo(PrimaryHitPacked);
 
             TriangleHit th = PrimaryHit.getTriangleHit();
             sd = loadShadingData(PrimaryHit, -ray.dir, true);
@@ -586,7 +587,9 @@ struct PathReusePass
                 }
                 else
                 {
-                    HitInfo centralPrimaryHit; centralPrimaryHit.unpack(centralPrimaryHitPacked);
+                    // HitInfo centralPrimaryHit; centralPrimaryHit.unpack(centralPrimaryHitPacked);
+                    HitInfo centralPrimaryHit = HitInfo(centralPrimaryHitPacked);
+
                     Ray ray = Ray(gScene.camera.getPosition(), -centralPrimarySd.V, 0, kRayTMax);
 
                     traceDenoiserData(params, centralPrimaryHitPacked, centralPrimarySd,

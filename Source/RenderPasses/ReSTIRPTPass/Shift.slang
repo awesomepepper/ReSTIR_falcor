@@ -97,8 +97,11 @@ float3 computeShiftedIntegrandRandomReplay(const RestirPathTracerParams params, 
     dstJacobian = 1.f;
     PathReservoir srcReservoir = tempPathReservoir;
 
-    HitInfo dstPrimaryHit; dstPrimaryHit.unpack(dstPrimaryHitPacked);
-    Ray ray = Ray(gScene.camera.getPosition(usePrev), -dstPrimarySd.V, 0, kRayTMax);
+    // HitInfo dstPrimaryHit; 
+    // dstPrimaryHit.unpack(dstPrimaryHitPacked);
+    HitInfo dstPrimaryHit = HitInfo(dstPrimaryHitPacked);
+    // Ray ray = Ray(gScene.camera.getPosition(usePrev), -dstPrimarySd.V, 0, kRayTMax);
+    Ray ray = Ray(gScene.camera.getPosition(), -dstPrimarySd.V, 0, kRayTMax);
 
     float3 L = gPathTracer.traceRandomReplayPath(dstPrimaryHit, dstPrimarySd, srcPrimarySd, ray, tempPathReservoir);
 
@@ -122,8 +125,8 @@ float3 computeShiftedIntegrandHybrid(const RestirPathTracerParams params, bool u
 
     dstJacobian = 1.f;
 
-    HitInfo dstPrimaryHit; dstPrimaryHit.unpack(dstPrimaryHitPacked);
-    Ray ray = Ray(gScene.camera.getPosition(usePrev), -dstPrimarySd.V, 0, kRayTMax);
+    HitInfo dstPrimaryHit = HitInfo(dstPrimaryHitPacked);
+    Ray ray = Ray(gScene.camera.getPosition(), -dstPrimarySd.V, 0, kRayTMax);
     bool isRcVertexEscapedVertex = tempPathReservoir.pathFlags.pathLength() + 1 == tempPathReservoir.pathFlags.rcVertexLength();
 
     PathReservoir srcReservoir = tempPathReservoir;
@@ -135,7 +138,8 @@ float3 computeShiftedIntegrandHybrid(const RestirPathTracerParams params, bool u
     if (srcReservoir.pathFlags.rcVertexLength() == 1)
     {
         Tp = 1.f;
-        dstRcPrevVertexHit.setValid();
+        // dstRcPrevVertexHit.setValid();
+        dstRcPrevVertexHit.data[0] = uint(HitType::Triangle) << HitInfo::kTypeOffset;
         dstRcPrevVertexWo = 1.f; // this value doesn't matter, as long as it is not all 0
 
         if (params.localStrategyType & (uint)LocalStrategy::RoughnessCondition)
@@ -204,8 +208,8 @@ float3 traceHybridShiftRays(const RestirPathTracerParams params, bool usePrev, c
     PathReservoir srcReservoir, inout HitInfo dstRcPrevVertexHit, inout float3 dstRcPrevVertexWo)
 {
     if (srcReservoir.weight == 0.f) return 0.f;
-    HitInfo dstPrimaryHit; dstPrimaryHit.unpack(dstPrimaryHitPacked);
-    Ray ray = Ray(gScene.camera.getPosition(usePrev), -dstPrimarySd.V, 0, kRayTMax); // this ray can be arbitrary, does not affect results
+    HitInfo dstPrimaryHit = HitInfo(dstPrimaryHitPacked);
+    Ray ray = Ray(gScene.camera.getPosition(), -dstPrimarySd.V, 0, kRayTMax); // this ray can be arbitrary, does not affect results
     float3 Tp = gPathTracer.traceRandomReplayPathHybridSimple(dstPrimaryHit, dstPrimarySd, ray, srcReservoir.pathFlags, srcReservoir.initRandomSeed, dstRcPrevVertexHit, dstRcPrevVertexWo);
     return Tp;
 }
@@ -214,7 +218,7 @@ float3 traceHybridShiftRays(const RestirPathTracerParams params, bool usePrev, c
 void traceDenoiserData(const RestirPathTracerParams params, const PackedHitInfo dstPrimaryHitPacked, const ShadingData dstPrimarySd,
     ReSTIRPathFlags pathFlags, uint initRandomSeed, inout float hitDist, inout NRDPathType pathType, inout float3 sampleReflectance)
 {
-    HitInfo dstPrimaryHit; dstPrimaryHit.unpack(dstPrimaryHitPacked);
+    HitInfo dstPrimaryHit = HitInfo(dstPrimaryHitPacked);
     Ray ray = Ray(gScene.camera.getPosition(), -dstPrimarySd.V, 0, kRayTMax); // this ray can be arbitrary, does not affect results
     gPathTracer.traceRandomReplayGetDenoiserData(dstPrimaryHit, dstPrimarySd, ray, pathFlags,
         initRandomSeed, hitDist, pathType, sampleReflectance);
@@ -647,7 +651,8 @@ bool evalSegmentVisibility(const float3 sourceVertex, const float3 targetVertex,
         tMax *= 0.999f; // prevent intersection with another surface
     }
 
-    RayDesc ray = { sourceVertex, 0.f, dir, tMax }; // TODO: use offset position instead
+    // RayDesc ray = { sourceVertex, 0.f, dir, tMax }; // TODO: use offset position instead
+    Ray ray = Ray(sourceVertex, dir, 0.f, tMax);
 
     SceneRayQuery<kUseAlphaTest> sceneRayQuery;
     return sceneRayQuery.traceVisibilityRay(ray, RAY_FLAG_NONE, 0xff);
@@ -656,6 +661,7 @@ bool evalSegmentVisibility(const float3 sourceVertex, const float3 targetVertex,
 bool traceVisibilityRay(const Ray ray)
 {
     SceneRayQuery<kUseAlphaTest> sceneRayQuery;
-    return sceneRayQuery.traceVisibilityRay(ray.toRayDesc(), RAY_FLAG_NONE, 0xff);
+    // return sceneRayQuery.traceVisibilityRay(ray.toRayDesc(), RAY_FLAG_NONE, 0xff);
+    return sceneRayQuery.traceVisibilityRay(ray, RAY_FLAG_NONE, 0xff);
 }
 

@@ -29,7 +29,7 @@ import Scene.Scene;
 import Utils.Attributes;
 import Utils.Color.ColorHelpers;
 import Rendering.Lights.EnvMapSampler;
-import Rendering.Materials.StandardMaterial;
+// import Rendering.Materials.StandardMaterial;
 import Rendering.Materials.ClothMaterial;
 import Rendering.Materials.HairMaterial;
 import LoadShadingData;
@@ -37,6 +37,18 @@ import PathTracer;
 import PathState;
 import Params;
 import PathReservoir;
+
+// import Utils.Attributes;
+// import Utils.Color.ColorHelpers;
+// import Rendering.RTXDI.RTXDI;
+// import RenderPasses.Shared.Denoising.NRDBuffers;
+// import RenderPasses.Shared.Denoising.NRDConstants;
+// import LoadShadingData;
+// import NRDHelpers;
+// import PathTracer;
+// import PathState;
+// import ColorType;
+// import Params;
 
 // Shared memory variables.
 // TODO: Can we declare these inside PathGenerator?

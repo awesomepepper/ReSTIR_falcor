@@ -424,7 +424,7 @@ namespace Falcor
         */
         DefineList getSceneDefines() const;
 
-        /** Get type conformances.
+        /** Get type conformances.image.png
             These type conformances must be set on all programs that access the scene.
             If the type conformances change at runtime, the update flag `TypeConformancesChanged` is set.
             The user is responsible to check for this and update all programs that access the scene.
