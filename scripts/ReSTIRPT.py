@@ -3,7 +3,7 @@ import os
 
 
 def render_graph_ScreenSpaceReSTIR():
-    g = RenderGraph("ScreenSpaceReSTIR")
+    g = RenderGraph("ReSTIRPTPass")
     # loadRenderPassLibrary("AccumulatePass.dll")
     # loadRenderPassLibrary("GBuffer.dll")
     # # loadRenderPassLibrary("ReSTIRPTPass.dll")

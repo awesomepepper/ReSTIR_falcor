@@ -52,7 +52,6 @@ enum class LobeType // : uint32_t
 
     SpecularOrDelta         = 0x66,
 
-
     Reflection              = 0x0f,
     Transmission            = 0xf0,
 

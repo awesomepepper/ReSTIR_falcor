@@ -558,6 +558,24 @@ void ReSTIRPTPass::execute(RenderContext* pRenderContext, const RenderData& rend
             // Update shader program specialization.
             updatePrograms();
 
+            if (mpEmissiveSampler)
+            {
+                //lightingChanged |= mpEmissiveSampler->update(pRenderContext, mpScene->getILightCollection(pRenderContext));
+                auto defines = mpEmissiveSampler->getDefines();
+                if (mpTracePass->getProgram()->addDefines(defines))
+                    mRecompile = true;
+                if (mpSpatialPathRetracePass->getProgram()->addDefines(defines))
+                    mRecompile = true;
+                if (mpTemporalPathRetracePass->getProgram()->addDefines(defines))
+                    mRecompile = true;
+                if (mpSpatialReusePass->getProgram()->addDefines(defines))
+                    mRecompile = true;
+                if (mpTemporalReusePass->getProgram()->addDefines(defines))
+                    mRecompile = true;
+                if (mpComputePathReuseMISWeightsPass->getProgram()->addDefines(defines))
+                    mRecompile = true;
+            }
+
             // Prepare resources.
             prepareResources(pRenderContext, renderData);
 
@@ -1456,18 +1474,18 @@ bool ReSTIRPTPass::prepareLighting(RenderContext* pRenderContext)
     {
         lightingChanged |= mpEmissiveSampler->update(pRenderContext, mpScene->getILightCollection(pRenderContext));
         auto defines = mpEmissiveSampler->getDefines();
-        if (mpTracePass->getProgram()->addDefines(defines))
-            mRecompile = true;
-        if (mpSpatialPathRetracePass->getProgram()->addDefines(defines))
-            mRecompile = true;
-        if (mpTemporalPathRetracePass->getProgram()->addDefines(defines))
-            mRecompile = true;
-        if (mpSpatialReusePass->getProgram()->addDefines(defines))
-            mRecompile = true;
-        if (mpTemporalReusePass->getProgram()->addDefines(defines))
-            mRecompile = true;
-        if (mpComputePathReuseMISWeightsPass->getProgram()->addDefines(defines))
-            mRecompile = true;
+        //if (mpTracePass->getProgram()->addDefines(defines))
+        //    mRecompile = true;
+        //if (mpSpatialPathRetracePass->getProgram()->addDefines(defines))
+        //    mRecompile = true;
+        //if (mpTemporalPathRetracePass->getProgram()->addDefines(defines))
+        //    mRecompile = true;
+        //if (mpSpatialReusePass->getProgram()->addDefines(defines))
+        //    mRecompile = true;
+        //if (mpTemporalReusePass->getProgram()->addDefines(defines))
+        //    mRecompile = true;
+        //if (mpComputePathReuseMISWeightsPass->getProgram()->addDefines(defines))
+        //    mRecompile = true;
     }
 
     return lightingChanged;
@@ -2018,8 +2036,16 @@ void ReSTIRPTPass::endFrame(RenderContext* pRenderContext, const RenderData& ren
     };
 
     // Copy pixel stats to outputs if available.
-    copyTexture(renderData[kOutputRayCount]->asTexture().get(), mpPixelStats->getRayCountTexture(pRenderContext).get());
-    copyTexture(renderData[kOutputPathLength]->asTexture().get(), mpPixelStats->getPathLengthTexture().get());
+    if (renderData[kOutputRayCount])
+    {
+        copyTexture(renderData[kOutputRayCount]->asTexture().get(), mpPixelStats->getRayCountTexture(pRenderContext).get());
+    }
+    if (renderData[kOutputPathLength])
+    {
+        copyTexture(renderData[kOutputPathLength]->asTexture().get(), mpPixelStats->getPathLengthTexture().get());
+    }
+    //copyTexture(renderData[kOutputRayCount]->asTexture().get(), mpPixelStats->getRayCountTexture(pRenderContext).get());
+    //copyTexture(renderData[kOutputPathLength]->asTexture().get(), mpPixelStats->getPathLengthTexture().get());
 
     mVarsChanged = false;
 }

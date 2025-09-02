@@ -75,6 +75,7 @@ struct PathReusePass
         {
             // HitInfo PrimaryHit; PrimaryHit.unpack(PrimaryHitPacked);
             HitInfo PrimaryHit = HitInfo(PrimaryHitPacked);
+            
             sd = loadShadingData(PrimaryHit, -ray.dir, true);
         }
         return sd;

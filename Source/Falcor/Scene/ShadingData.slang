@@ -36,7 +36,6 @@ import Rendering.Materials.IBxDF;
 #include "Utils/HostDeviceShared.slangh"
 
 
-
 /** This struct holds information needed for shading a hit point.
 
     This includes:

@@ -48,7 +48,6 @@ __exported import Utils.Sampling.SampleGeneratorInterface;
 __exported import Rendering.Materials.BxDF;
 __exported import Rendering.Materials.IBSDF;
 __exported import Rendering.Materials.MaterialHelpers;
-__exported import Scene.ShadingData;
 
 // Run legacy BSDF code by default. The host can override this by defining _USE_LEGACY_SHADING_CODE=0.
 // TODO: Remove this when the new code has been properly validated
